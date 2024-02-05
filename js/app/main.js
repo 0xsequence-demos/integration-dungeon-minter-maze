@@ -10,31 +10,32 @@ require(['lib/three', 'lib/tween', 'dungeon', 'relativeDir', 'constants'], funct
         var key = event.keyCode ? event.keyCode : event.which;
         console.log(key)
         const compass = event.target.textContent
+        if(event.target.id == '1') {
+            party.handleKey(81);
+            return
+        }
         console.log(compass)
         switch(compass){
-            case 'w':
+            case '↑':
                 party.handleKey(87);
                 break;
-            case 'q':
-                party.handleKey(81);
-                break;
-            case 'e':
+            case '⟳':
                 party.handleKey(69);
                 break;
-            case 's':
+            case '↓':
                 party.handleKey(83);
                 break;
-            case 'a':
+            case '←':
                 party.handleKey(65);
                 break;
-            case 'd':
+            case '→':
                 party.handleKey(68);
                 break;
         }
     }
     
     // Array of button labels
-    const buttonLabels = ['q', 'w', 'e', 'a', 's', 'd'];
+    const buttonLabels = ['1', '↑', '2', '←', '↓', '→'];
     
     // Create a container for the buttons
     const buttonsContainer = document.createElement('div');
@@ -55,6 +56,17 @@ require(['lib/three', 'lib/tween', 'dungeon', 'relativeDir', 'constants'], funct
         button.style.color = 'white';
         button.style.padding = '20px';
         button.style.cursor = 'pointer';
+
+        if (label === '1') {
+            button.style.transform = 'scaleY(-1)';
+            button.textContent = '⟳';
+            button.id = '1';
+        }
+
+        if (label === '2') {
+            button.textContent = '⟳';
+        }
+
         button.addEventListener('click', handleButtonClick);
         buttonsContainer.appendChild(button);
     });

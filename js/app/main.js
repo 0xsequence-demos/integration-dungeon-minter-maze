@@ -5,6 +5,63 @@ require(['lib/three', 'lib/tween', 'dungeon', 'relativeDir', 'constants'], funct
 
     renderer.setPixelRatio(window.devicePixelRatio);
     renderer.setSize(window.innerWidth, window.innerHeight);
+
+    function handleButtonClick(event) {
+        var key = event.keyCode ? event.keyCode : event.which;
+        console.log(key)
+        const compass = event.target.textContent
+        console.log(compass)
+        switch(compass){
+            case 'w':
+                party.handleKey(87);
+                break;
+            case 'q':
+                party.handleKey(81);
+                break;
+            case 'e':
+                party.handleKey(69);
+                break;
+            case 's':
+                party.handleKey(83);
+                break;
+            case 'a':
+                party.handleKey(65);
+                break;
+            case 'd':
+                party.handleKey(68);
+                break;
+        }
+    }
+    
+    // Array of button labels
+    const buttonLabels = ['q', 'w', 'e', 'a', 's', 'd'];
+    
+    // Create a container for the buttons
+    const buttonsContainer = document.createElement('div');
+    buttonsContainer.style.position = 'fixed';
+    buttonsContainer.style.bottom = '0';
+    buttonsContainer.style.left = '0';
+    buttonsContainer.style.margin = '10px';
+    buttonsContainer.style.display = 'flex';
+    buttonsContainer.style.flexDirection = 'column';
+    buttonsContainer.style.gap = '5px';
+    
+    // Create and append buttons
+    buttonLabels.forEach(label => {
+        const button = document.createElement('button');
+        button.textContent = label;
+        button.style.border = '2px solid white';
+        button.style.background = 'transparent';
+        button.style.color = 'white';
+        button.style.padding = '20px';
+        button.style.cursor = 'pointer';
+        button.addEventListener('click', handleButtonClick);
+        buttonsContainer.appendChild(button);
+    });
+    
+    // Append the container to the body
+    document.body.appendChild(buttonsContainer);
+
     document.body.appendChild(renderer.domElement);
 
     renderer.shadowMap.type = THREE.PCFSoftShadowMap;
@@ -162,7 +219,7 @@ window.addEventListener('click', onMouseClick, false);
 
     document.addEventListener('keydown', function(e) {
         var key = e.keyCode ? e.keyCode : e.which;
-
+        console.log(key)
         party.handleKey(key);
     });
 

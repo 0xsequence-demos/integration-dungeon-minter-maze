@@ -55,13 +55,15 @@ require(['lib/three', 'lib/tween', 'dungeon', 'relativeDir', 'constants'], funct
         button.style.background = 'transparent';
         button.style.color = 'white';
         button.style.padding = '20px';
+        button.style.zIndex = 2
+
         if(label==''){
             button.style.border = '0px';
             button.style.padding = '20000px';
             button.style.position = 'absolute';
             button.style.outline = 'none';
+            button.style.zIndex = 1
         }
-        button.style.cursor = 'pointer';
 
         if (label === '1') {
             button.style.transform = 'scaleY(-1)';

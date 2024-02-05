@@ -50,7 +50,7 @@ require(['lib/three', 'lib/tween', 'dungeon', 'relativeDir', 'constants'], funct
     buttonLabels.forEach(label => {
         const button = document.createElement('button');
         button.textContent = label;
-        button.style.border = '2px solid white';
+        button.style.border = '2px solid slate';
         button.style.background = 'transparent';
         button.style.color = 'white';
         button.style.padding = '20px';

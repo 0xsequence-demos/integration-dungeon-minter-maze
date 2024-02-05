@@ -1,4 +1,5 @@
 define(['lib/three', 'constants', 'party', 'direction'], function(THREE, Const, Party, Direction) {
+
     function Dungeon() {
         // this.map = [[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0],
         //             [0, 0, 0, 1, 0, 0, 0, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 0, 0, 1, 1, 0, 0, 0, 0, 0],
@@ -26,6 +27,8 @@ define(['lib/three', 'constants', 'party', 'direction'], function(THREE, Const, 
                     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]];
 
         this.spawn_loc = {x: 3, y: 9};
+        
+        // this.spawn_loc = {x: Number(localStorage.getItem('x')), y: Number(localStorage.getItem('y'))};
         this.spawn_dir = Direction.NORTH;
     }
 
@@ -40,14 +43,28 @@ define(['lib/three', 'constants', 'party', 'direction'], function(THREE, Const, 
             return false;
         },
 
-        spawnParty: function() {
-            var self = this;
-            return new Party(this.spawn_loc.x,
-                             this.spawn_loc.y,
-                             this.spawn_dir,
-                             function(x, y) {
-                                 return self.partyCollidesWith(x, y);
-                             });
+        spawnParty: function(x,y, spawn_dir) {
+            if(x){
+                console.log('spawning')
+                var self = this;
+                return new Party(x,
+                                 y,
+                                 spawn_dir,
+                                 function(x, y) {
+                                     return self.partyCollidesWith(x, y);
+                                 });
+            }else {
+                console.log('default')
+
+                var self = this;
+                return new Party(this.spawn_loc.x,
+                                 this.spawn_loc.y,
+                                 this.spawn_dir,
+                                 function(x, y) {
+                                     return self.partyCollidesWith(x, y);
+                                 });
+            }
+
         },
 
         addMeshesToScene: function(scene) {
@@ -107,14 +124,14 @@ define(['lib/three', 'constants', 'party', 'direction'], function(THREE, Const, 
                                 //     // mesh1.position.z = y;
                                 //     // scene.add(mesh1);
                                 // } else {
-                                    // var mesh = new THREE.Mesh(basicWallGeom, material);
-                                    // mesh.castShadow = true;
-                                    // mesh.receiveShadow = true;
+                                    var mesh = new THREE.Mesh(basicWallGeom, material);
+                                    mesh.castShadow = true;
+                                    mesh.receiveShadow = true;
 
-                                    // mesh.position.x = x;
-                                    // mesh.position.y = 0.5;
-                                    // mesh.position.z = y;
-                                    // scene.add(mesh);
+                                    mesh.position.x = x;
+                                    mesh.position.y = 0.5;
+                                    mesh.position.z = y;
+                                    scene.add(mesh);
                                 // }
                             } 
                             if (type == 1 || type == 2) {

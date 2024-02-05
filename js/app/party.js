@@ -48,6 +48,7 @@ define(['lib/three', 'lib/tween', 'util', 'constants', 'direction', 'relativeDir
 
     Party.prototype = {
         updateLocation: function() {
+            
             this.camera.position.x = this.position.x;
             this.camera.position.z = this.position.y;
         },
@@ -74,6 +75,12 @@ define(['lib/three', 'lib/tween', 'util', 'constants', 'direction', 'relativeDir
                 var bumpPath = {
                     x: [this.position.x + Direction.deltaX(dir)*0.05, this.position.x],
                     z: [this.position.y + Direction.deltaY(dir)*0.05, this.position.y]};
+                    //todo
+                    console.log(bumpPath.x[1])
+                    console.log(bumpPath.z[1])
+                    localStorage.setItem('x', bumpPath.x[1])
+                    localStorage.setItem('y', bumpPath.x[1])
+                    localStorage.setItem('direction-1', this.direction)
 
                 new TWEEN.Tween(this.camera.position)
                     .to(bumpPath, Const.PARTY.BUMP_TIME)
@@ -84,6 +91,15 @@ define(['lib/three', 'lib/tween', 'util', 'constants', 'direction', 'relativeDir
             } else {
                 this.position.x = newX;
                 this.position.y = newY;
+                
+                //todo
+                console.log(this.position.x)
+                console.log(this.position.y)
+                
+                localStorage.setItem('direction-1', this.direction)
+
+                localStorage.setItem('x', this.position.x)
+                localStorage.setItem('y', this.position.y)
 
                 new TWEEN.Tween(this.camera.position)
                     .to({x: newX, z: newY}, Const.PARTY.MOVE_TIME)
@@ -110,6 +126,8 @@ define(['lib/three', 'lib/tween', 'util', 'constants', 'direction', 'relativeDir
             this.moving = true;
 
             this.direction = dir;
+            localStorage.setItem('direction-1', this.direction)
+
             var self = this;
 
             var rotateAmount = Direction.asRadians(dir) - Util.mod(this.camera.rotation.y, 2*Math.PI);
@@ -126,10 +144,12 @@ define(['lib/three', 'lib/tween', 'util', 'constants', 'direction', 'relativeDir
         },
 
         rotateCW: function() {
+            console.log(Direction.rotatedCW(this.direction))
             this.rotateTo(Direction.rotatedCW(this.direction));
         },
 
         rotateCCW: function() {
+            console.log(Direction.rotatedCCW(this.direction))
             this.rotateTo(Direction.rotatedCCW(this.direction));
         },
 

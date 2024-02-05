@@ -22,7 +22,25 @@ require(['lib/three', 'lib/tween', 'dungeon', 'relativeDir', 'constants'], funct
 
     var dungeon = new Dungeon();
 
-    var party = dungeon.spawnParty();
+    var party;
+
+    const direction = {
+        FORWARD:  0,
+        RIGHT:    1,
+        BACKWARD: 2,
+        LEFT:     3
+    }
+
+    const url = new URL(window.location.href);
+    const params = new URLSearchParams(url.search);
+
+    const refresh = params.get('refresh'); 
+
+    if(refresh == 'true'){
+        party = dungeon.spawnParty(Number(localStorage.getItem('x')),Number(localStorage.getItem('y')), Number(localStorage.getItem('direction-1')));
+    } else {
+        party = dungeon.spawnParty(10,6, direction.FORWARD);
+    }
 
     dungeon.addMeshesToScene(scene, party.camera);
 
@@ -33,7 +51,6 @@ require(['lib/three', 'lib/tween', 'dungeon', 'relativeDir', 'constants'], funct
         return Math.floor(Math.random() * (max - min + 1)) + min;
     }
 
-    // const colors = [0xD4FF00, ]
     const colors = [
         0xffb23e, //orange
         0xDCD31D, //yellow
@@ -75,7 +92,7 @@ require(['lib/three', 'lib/tween', 'dungeon', 'relativeDir', 'constants'], funct
         return positions;
     }
     
-    let validPositions = findValidPositions(map, 3, 9, 8);
+    let validPositions = findValidPositions(map, 10, 6, 8);
     
     for (let i = 0; i < 5; i++) {
         var material = new THREE.MeshPhongMaterial({
@@ -130,18 +147,13 @@ require(['lib/three', 'lib/tween', 'dungeon', 'relativeDir', 'constants'], funct
     const intersects = raycaster.intersectObjects(scene.children);
 
     for (let i = 0; i < intersects.length; i++) {
-        // if (intersects[i].object === myMesh) {
-            // Handle click event for myMesh
-            console.log('Mesh clicked');
-            // console.log(intersects[i].object.name)
-            if(intersects[i].object.name == 'loot'){
-                console.log('save')
-                // alert('a transport')
-                window.parent.postMessage({portal: 'loot'}, 'http://localhost:5173/');
+        console.log('log')
+            if(intersects[i].object.name == 'loot'&& intersects[i].distance < 1.9){
+                console.log('loot')
+                window.parent.postMessage({portal: 'loot'}, 'http://155.138.156.102:5173/');
+                // window.parent.postMessage({portal: 'loot'}, 'https://lootbox.ngrok.app/');
             }
-
-        // }
-    }
+        }
     }
 
 // Add event listener for mouse click
@@ -177,8 +189,6 @@ window.addEventListener('click', onMouseClick, false);
 
         renderer.render(scene, party.camera);
     }
-
-    //render();
 
     var lightCoords = [[3, 8],
                        [2, 2],

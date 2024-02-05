@@ -35,12 +35,12 @@ require(['lib/three', 'lib/tween', 'dungeon', 'relativeDir', 'constants'], funct
     }
     
     // Array of button labels
-    const buttonLabels = ['1', '↑', '2', '←', '↓', '→'];
+    const buttonLabels = ['1', '↑', '2', '←', '↓', '→',''];
     
     // Create a container for the buttons
     const buttonsContainer = document.createElement('div');
     buttonsContainer.style.position = 'fixed';
-    buttonsContainer.style.bottom = '0';
+    buttonsContainer.style.top = '0';
     buttonsContainer.style.left = '0';
     buttonsContainer.style.margin = '10px';
     buttonsContainer.style.display = 'flex';
@@ -55,6 +55,12 @@ require(['lib/three', 'lib/tween', 'dungeon', 'relativeDir', 'constants'], funct
         button.style.background = 'transparent';
         button.style.color = 'white';
         button.style.padding = '20px';
+        if(label==''){
+            button.style.border = '0px';
+            button.style.padding = '20000px';
+            button.style.position = 'absolute';
+            button.style.outline = 'none';
+        }
         button.style.cursor = 'pointer';
 
         if (label === '1') {
@@ -66,6 +72,7 @@ require(['lib/three', 'lib/tween', 'dungeon', 'relativeDir', 'constants'], funct
         if (label === '2') {
             button.textContent = '⟳';
         }
+
 
         button.addEventListener('click', handleButtonClick);
         buttonsContainer.appendChild(button);

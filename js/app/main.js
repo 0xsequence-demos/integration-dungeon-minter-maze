@@ -8,13 +8,11 @@ require(['lib/three', 'lib/tween', 'dungeon', 'relativeDir', 'constants'], funct
 
     function handleButtonClick(event) {
         var key = event.keyCode ? event.keyCode : event.which;
-        console.log(key)
         const compass = event.target.textContent
         if(event.target.id == '1') {
             party.handleKey(81);
             return
         }
-        console.log(compass)
         switch(compass){
             case '↑':
                 party.handleKey(87);
@@ -149,28 +147,48 @@ require(['lib/three', 'lib/tween', 'dungeon', 'relativeDir', 'constants'], funct
     [0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 1, 0, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0],
     [0, 0, 1, 1, 1, 0, 0, 1, 0, 0, 0, 0, 1, 0, 1, 1, 1, 1, 1, 0, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0],
     [0, 0, 1, 1, 1, 0, 1, 1, 1, 0, 1, 0, 1, 0, 1, 1, 1, 1, 1, 0, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0],
-    [0, 0, 1, 1, 1, 0, 1, 2, 1, 1, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 0],
+    [0, 0, 1, 1, 1, 0, 1, 1, 1, 1, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 0],
     [0, 0, 1, 1, 1, 0, 1, 1, 1, 0, 1, 0, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 0, 0, 1, 1, 0, 0, 0, 0, 0],
     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]];
     
     function findValidPositions(map, startX, startY, radius) {
-        let positions = [];
+        let positions_x = [];
+        let positions_z = [];
+        let validPositions = [];
+        let minX = Math.max(startX - radius, 0);
+        let maxX = Math.min(startX + radius, map[0].length - 1);
+        let minZ = Math.max(startY - radius, 0);
+        let maxZ = Math.min(startY + radius, map.length - 1);
+
         for (let z = 0; z < map.length; z++) {
             for (let x = 0; x < map[z].length; x++) {
                 if (map[z][x] === 1) {
-                    let dx = x - startX;
-                    let dz = z - startY;
-                    let distanceSquared = dx * dx + dz * dz;
-                    if (distanceSquared > radius * radius) {
-                        positions.push({ x, z });
+                    // Check if within the computed ranges
+                    if (x >= minX && x <= maxX && z >= minZ && z <= maxZ) {
+                        // Add to positions if within the radius for x or z
+                        positions_x.push(x)
+                        positions_z.push(z)
                     }
                 }
             }
         }
-        return positions;
+
+        for (let z = 0; z < map.length; z++) {
+            for (let x = 0; x < map[z].length; x++) {
+                if (map[z][x] === 1) {
+                    // Check if within the computed ranges
+                    if (!positions_x.includes(x) && !positions_z.includes(z)) {
+                        // Add to positions if within the radius for x or z
+                        validPositions.push({ x, z });
+                    }
+                }
+            }
+        }
+        return validPositions;
     }
     
-    let validPositions = findValidPositions(map, 10, 6, 8);
+    
+    let validPositions = findValidPositions(map, Number(localStorage.getItem('x')) ? Number(localStorage.getItem('x')): 10,Number(localStorage.getItem('y')) ? Number(localStorage.getItem('y')): 6, 6);
     
     for (let i = 0; i < 5; i++) {
         var material = new THREE.MeshPhongMaterial({
@@ -228,7 +246,8 @@ require(['lib/three', 'lib/tween', 'dungeon', 'relativeDir', 'constants'], funct
         console.log('log')
             if(intersects[i].object.name == 'loot'&& intersects[i].distance < 1.9){
                 console.log('loot')
-                window.parent.postMessage({portal: 'loot'}, 'https://lootbox-client.vercel.app/');
+                // window.parent.postMessage({portal: 'loot'}, 'http://localhost:5173/');
+                window.parent.postMessage({portal: 'loot'}, 'https://lootbox-client.vercel.app');
                 // window.parent.postMessage({portal: 'loot'}, 'https://lootbox.ngrok.app/');
             }
         }

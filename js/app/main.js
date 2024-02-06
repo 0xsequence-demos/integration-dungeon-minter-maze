@@ -228,7 +228,7 @@ require(['lib/three', 'lib/tween', 'dungeon', 'relativeDir', 'constants'], funct
         console.log('log')
             if(intersects[i].object.name == 'loot'&& intersects[i].distance < 1.9){
                 console.log('loot')
-                window.parent.postMessage({portal: 'loot'}, 'http://155.138.156.102:5173/');
+                window.parent.postMessage({portal: 'loot'}, 'https://lootbox-client.vercel.app/');
                 // window.parent.postMessage({portal: 'loot'}, 'https://lootbox.ngrok.app/');
             }
         }

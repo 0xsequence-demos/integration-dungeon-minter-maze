@@ -17,7 +17,7 @@ require(['lib/three', 'lib/tween', 'dungeon', 'relativeDir', 'constants'], funct
             case '↑':
                 party.handleKey(87);
                 break;
-            case '⟳':
+            case '↷':
                 party.handleKey(69);
                 break;
             case '↓':
@@ -64,13 +64,12 @@ require(['lib/three', 'lib/tween', 'dungeon', 'relativeDir', 'constants'], funct
         }
 
         if (label === '1') {
-            button.style.transform = 'scaleY(-1)';
-            button.textContent = '⟳';
+            button.textContent = '↶';
             button.id = '1';
         }
 
         if (label === '2') {
-            button.textContent = '⟳';
+            button.textContent = '↷';
         }
 
 

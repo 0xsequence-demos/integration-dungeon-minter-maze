@@ -186,10 +186,9 @@ require(['lib/three', 'lib/tween', 'dungeon', 'relativeDir', 'constants'], funct
         return validPositions;
     }
     
+    let validPositions = findValidPositions(map, Number(localStorage.getItem('x')) ? Number(localStorage.getItem('x')): 10,Number(localStorage.getItem('y')) ? Number(localStorage.getItem('y')): 6, 4);
     
-    let validPositions = findValidPositions(map, Number(localStorage.getItem('x')) ? Number(localStorage.getItem('x')): 10,Number(localStorage.getItem('y')) ? Number(localStorage.getItem('y')): 6, 6);
-    
-    for (let i = 0; i < 5; i++) {
+    for (let i = 0; i < 10; i++) {
         var material = new THREE.MeshPhongMaterial({
             color: colors[i % colors.length],
             emissive: colors[i % colors.length],
@@ -242,11 +241,10 @@ require(['lib/three', 'lib/tween', 'dungeon', 'relativeDir', 'constants'], funct
     const intersects = raycaster.intersectObjects(scene.children);
 
     for (let i = 0; i < intersects.length; i++) {
-        console.log('log')
-            if(intersects[i].object.name == 'loot'&& intersects[i].distance < 1.9){
+            if(intersects[i].object.name == 'loot' && intersects[i].distance < 1.9){
                 console.log('loot')
-                // window.parent.postMessage({portal: 'loot'}, 'http://localhost:5173/');
-                window.parent.postMessage({portal: 'loot'}, 'https://lootbox-client.vercel.app');
+                window.parent.postMessage({portal: 'loot'}, 'http://localhost:5173/');
+                // window.parent.postMessage({portal: 'loot'}, 'https://lootbox-client.vercel.app');
                 // window.parent.postMessage({portal: 'loot'}, 'https://lootbox.ngrok.app/');
             }
         }

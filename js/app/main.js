@@ -243,8 +243,8 @@ require(['lib/three', 'lib/tween', 'dungeon', 'relativeDir', 'constants'], funct
     for (let i = 0; i < intersects.length; i++) {
             if(intersects[i].object.name == 'loot' && intersects[i].distance < 1.9){
                 console.log('loot')
-                window.parent.postMessage({portal: 'loot'}, 'http://localhost:5173/');
-                // window.parent.postMessage({portal: 'loot'}, 'https://lootbox-client.vercel.app');
+                // window.parent.postMessage({portal: 'loot'}, 'http://localhost:5173/');
+                window.parent.postMessage({portal: 'loot'}, 'https://lootbox-client.vercel.app');
                 // window.parent.postMessage({portal: 'loot'}, 'https://lootbox.ngrok.app/');
             }
         }

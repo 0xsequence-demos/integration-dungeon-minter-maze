@@ -56,11 +56,12 @@ require(['lib/three', 'lib/tween', 'dungeon', 'relativeDir', 'constants'], funct
         button.style.zIndex = 2
 
         if(label==''){
+            button.id = 'glass'
             button.style.border = '0px';
             button.style.padding = '20000px';
             button.style.position = 'absolute';
             button.style.outline = 'none';
-            button.style.zIndex = 1
+            button.style.zIndex = 100
         }
 
         if (label === '1') {
@@ -230,7 +231,7 @@ require(['lib/three', 'lib/tween', 'dungeon', 'relativeDir', 'constants'], funct
     const mouse = new THREE.Vector2();
 
     function onMouseClick(event) {
-        
+        console.log(event)
         // Calculate mouse position in normalized device coordinates
         mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
         mouse.y = - (event.clientY / window.innerHeight) * 2 + 1;
@@ -243,12 +244,14 @@ require(['lib/three', 'lib/tween', 'dungeon', 'relativeDir', 'constants'], funct
 
         for (let i = 0; i < intersects.length; i++) {
             if(intersects[i].object.name == 'loot' && intersects[i].distance < 1.9){
-                window.parent.postMessage({portal: 'loot'}, 'https://lootbox-client.vercel.app');
+                // window.parent.postMessage({portal: 'loot'}, 'https://lootbox-client.vercel.app');
+                window.parent.postMessage({portal: 'loot'}, 'http://localhost:5173/demo-lootbox/');
             }
         }
     }
 
     // Add event listener for mouse click
+    document.getElementById('glass').addEventListener('click', onMouseClick, false)
     window.addEventListener('click', onMouseClick, false);
 
     document.addEventListener('keydown', function(e) {

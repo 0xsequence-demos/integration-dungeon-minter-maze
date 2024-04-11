@@ -24,6 +24,14 @@ define({
 
         rotate_left:   [81], // Q
         rotate_right:  [69], // E
+
+        move_forward_arrows:  [38], // up
+        move_left_arrows:     [37], // left
+        move_backward_arrows: [40], // down
+        move_right_arrows:    [39], // 
+
+        rotate_left_arrows:   [33], // Q
+        rotate_right_arrows:  [34], // E
     },
 
     TILES: [{

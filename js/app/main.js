@@ -14,26 +14,26 @@ require(['lib/three', 'lib/tween', 'dungeon', 'relativeDir', 'constants'], funct
             return
         }
         switch(compass){
-            case '↑':
+            case '↑ w':
                 party.handleKey(87);
                 break;
-            case '↷':
+            case '↷ e':
                 party.handleKey(69);
                 break;
-            case '↓':
+            case '↓ s':
                 party.handleKey(83);
                 break;
-            case '←':
+            case '← a':
                 party.handleKey(65);
                 break;
-            case '→':
+            case '→ d':
                 party.handleKey(68);
                 break;
         }
     }
     
     // Array of button labels
-    const buttonLabels = ['1', '↑', '2', '←', '↓', '→',''];
+    const buttonLabels = ['1', '↑ w', '2', '← a', '↓ s', '→ d',''];
     
     // Create a container for the buttons
     const buttonsContainer = document.createElement('div');
@@ -64,12 +64,13 @@ require(['lib/three', 'lib/tween', 'dungeon', 'relativeDir', 'constants'], funct
         }
 
         if (label === '1') {
-            button.textContent = '↶';
+            button.textContent = '↶ q';
             button.id = '1';
         }
 
         if (label === '2') {
-            button.textContent = '↷';
+            button.textContent = '↷ e';
+            button.id = '2';
         }
 
 
@@ -229,30 +230,26 @@ require(['lib/three', 'lib/tween', 'dungeon', 'relativeDir', 'constants'], funct
     const mouse = new THREE.Vector2();
 
     function onMouseClick(event) {
-    // Calculate mouse position in normalized device coordinates
-    // (-1 to +1) for both components
-    mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
-    mouse.y = - (event.clientY / window.innerHeight) * 2 + 1;
+        
+        // Calculate mouse position in normalized device coordinates
+        mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+        mouse.y = - (event.clientY / window.innerHeight) * 2 + 1;
 
-    // Update the picking ray with the camera and mouse position
-    raycaster.setFromCamera(mouse, party.camera);
+        // Update the picking ray with the camera and mouse position
+        raycaster.setFromCamera(mouse, party.camera);
 
-    // Calculate objects intersecting the picking ray
-    const intersects = raycaster.intersectObjects(scene.children);
+        // Calculate objects intersecting the picking ray
+        const intersects = raycaster.intersectObjects(scene.children);
 
-    for (let i = 0; i < intersects.length; i++) {
+        for (let i = 0; i < intersects.length; i++) {
             if(intersects[i].object.name == 'loot' && intersects[i].distance < 1.9){
-                console.log('loot')
-                // window.parent.postMessage({portal: 'loot'}, 'http://localhost:5173/');
                 window.parent.postMessage({portal: 'loot'}, 'https://lootbox-client.vercel.app');
-                // window.parent.postMessage({portal: 'loot'}, 'https://lootbox.ngrok.app/');
             }
         }
     }
 
-// Add event listener for mouse click
-window.addEventListener('click', onMouseClick, false);
-
+    // Add event listener for mouse click
+    window.addEventListener('click', onMouseClick, false);
 
     document.addEventListener('keydown', function(e) {
         var key = e.keyCode ? e.keyCode : e.which;
@@ -326,5 +323,4 @@ window.addEventListener('click', onMouseClick, false);
             });
         });
     });
-
 });

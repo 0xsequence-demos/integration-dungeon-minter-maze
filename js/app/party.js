@@ -23,6 +23,25 @@ define(['lib/three', 'lib/tween', 'util', 'constants', 'direction', 'relativeDir
             }},
             rotate_right: {movement: true, action: function() {
                 self.rotateCW();
+            }},
+
+            move_forward_arrows: {movement: true, action: function() {
+                self.moveRelative(RelativeDir.FORWARD);
+            }},
+            move_right_arrows: {movement: true, action: function() {
+                self.moveRelative(RelativeDir.RIGHT);
+            }},
+            move_left_arrows: {movement: true, action: function() {
+                self.moveRelative(RelativeDir.LEFT);
+            }},
+            move_backward_arrows: {movement: true, action: function() {
+                self.moveRelative(RelativeDir.BACKWARD);
+            }},
+            rotate_left_arrows: {movement: true, action: function() {
+                self.rotateCCW();
+            }},
+            rotate_right_arrows: {movement: true, action: function() {
+                self.rotateCW();
             }}
         };
         

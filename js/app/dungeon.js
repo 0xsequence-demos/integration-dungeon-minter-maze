@@ -99,40 +99,14 @@ define(['lib/three', 'constants', 'party', 'direction'], function(THREE, Const, 
                             var type = row[x];
 
                             if (type == 0) {
-                                // const ran = Math.random()
-                                // if(ran < .09){
-                                //     const material = new THREE.MeshPhongMaterial({ map: texture });
-                                //     const basicWallGeom = new THREE.BoxGeometry(1, 1, 1)
-                                //     // const geometry = new THREE.PlaneGeometry(5, 5);
-                                //     const mesh = new THREE.Mesh(basicWallGeom, material);
+                                var mesh = new THREE.Mesh(basicWallGeom, material);
+                                mesh.castShadow = true;
+                                mesh.receiveShadow = true;
 
-                                //     mesh.castShadow = true;
-                                //     mesh.receiveShadow = true;
-                                //     mesh.name = 'portal'
-
-                                //     mesh.position.x = x;
-                                //     mesh.position.y = 0.5;
-                                //     mesh.position.z = y;
-                                //     scene.add(mesh);
-
-                                //     // var mesh1 = new THREE.Mesh(basicWallGeom, material);
-                                //     // mesh1.castShadow = true;
-                                //     // mesh1.receiveShadow = true;
-
-                                //     // mesh1.position.x = x;
-                                //     // mesh1.position.y = 0.5;
-                                //     // mesh1.position.z = y;
-                                //     // scene.add(mesh1);
-                                // } else {
-                                    var mesh = new THREE.Mesh(basicWallGeom, material);
-                                    mesh.castShadow = true;
-                                    mesh.receiveShadow = true;
-
-                                    mesh.position.x = x;
-                                    mesh.position.y = 0.5;
-                                    mesh.position.z = y;
-                                    scene.add(mesh);
-                                // }
+                                mesh.position.x = x;
+                                mesh.position.y = 0.5;
+                                mesh.position.z = y;
+                                scene.add(mesh);
                             } 
                             if (type == 1 || type == 2) {
                                 var floorMesh = new THREE.Mesh(basicTileGeom, material);
@@ -155,24 +129,10 @@ define(['lib/three', 'constants', 'party', 'direction'], function(THREE, Const, 
                                 ceilMesh.rotation.x = Math.PI*0.5;
                                 scene.add(ceilMesh);
                             } 
-                            // else 
-                            if(type == 0) {
-
-                                // 2. Create a texture
-                                // console.log(texture)
-                                // (This step is basically done by the loader, so you directly get the texture)
-
-                                // 3. Create a material
-                                    
-
-                               
-                            }
                         }
                     }
                 });
             });
-            // });
-
         }
     };
 

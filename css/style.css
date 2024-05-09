@@ -6,3 +6,55 @@ body {
 #glass {
     left: 150px;
 }
+
+@font-face {
+	font-family: ChiKareGo2;
+	src: url(fonts/ChiKareGo2.ttf);
+}
+
+
+.mini-map {
+    position: fixed;
+    height: 180px;
+    top: 30px;
+    left: 30px;
+    width: 180px;
+    flex-direction: column;
+    border: 2px solid grey; /* Grey border around the mini-map */
+  }
+  
+  .row {
+    display: flex;
+  }
+  
+  .cell {
+    width: 20px;
+    height: 20px;
+    background-color: black;
+    /* border: 1px solid #000; */
+    position: relative; /* Needed for absolute positioning inside */
+  }
+  
+  .cell.obstacle {
+    background-color: #333; /* Obstacle color */
+  }
+  
+  .color-marker {
+    width: 5px;
+    height: 5px;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+  }
+  
+  .player-marker {
+    width: 5px;
+    height: 5px;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) rotate(0deg); /* Adjust rotation based on player orientation */
+    clip-path: polygon(50% 0%, 0% 100%, 100% 100%); /* Triangle shape */
+    background-color: #A020F0; /* Default color for the player marker */
+  }

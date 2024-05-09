@@ -7,53 +7,71 @@ require(['lib/three', 'lib/tween', 'dungeon', 'relativeDir', 'constants'], funct
     renderer.setSize(window.innerWidth, window.innerHeight);
 
     function handleButtonClick(event) {
+        console.log(event)
         var key = event.keyCode ? event.keyCode : event.which;
-        const compass = event.target.textContent
-        if(event.target.id == '1') {
-            party.handleKey(81);
-            return
-        }
+        const compass = event.target.textContent.toLowerCase()
+
+        let key_code;
         switch(compass){
-            case '↑ w':
-                party.handleKey(87);
+            case 'q':
+                key_code = 81
                 break;
-            case '↷ e':
-                party.handleKey(69);
+            case 'w':
+                key_code = 87
                 break;
-            case '↓ s':
-                party.handleKey(83);
+            case 'e':
+                key_code = 69
                 break;
-            case '← a':
-                party.handleKey(65);
+            case 's':
+                key_code = 83
                 break;
-            case '→ d':
-                party.handleKey(68);
+            case 'a':
+                key_code = 65
                 break;
+            case 'd':
+                key_code = 68
+                break;
+        }
+        party.handleKey(key_code);
+
+        const keyChar = String.fromCharCode(key_code);
+        const button = document.querySelector(`button[data-key="${keyChar.toUpperCase()}"]`);
+        if (button) {
+            flashButton(button);
         }
     }
     
     // Array of button labels
-    const buttonLabels = ['1', '↑ w', '2', '← a', '↓ s', '→ d',''];
-    
+    const buttonLabels = ['Q', 'W', 'E', 'A', 'S', 'D', ''];
+
     // Create a container for the buttons
     const buttonsContainer = document.createElement('div');
     buttonsContainer.style.position = 'fixed';
-    buttonsContainer.style.top = '0';
-    buttonsContainer.style.left = '0';
+    buttonsContainer.style.bottom = '10px';
+    buttonsContainer.style.left = '20px';
     buttonsContainer.style.margin = '10px';
-    buttonsContainer.style.display = 'flex';
-    buttonsContainer.style.flexDirection = 'column';
+    buttonsContainer.style.display = 'grid';
+    buttonsContainer.style.gridTemplateColumns = 'repeat(3, 1fr)'; // 3 columns
+    buttonsContainer.style.gridTemplateRows = 'repeat(2, 1fr)'; // 2 rows
     buttonsContainer.style.gap = '5px';
-    
+    buttonsContainer.style.width = '150px'; // Set a fixed width for the container
+    buttonsContainer.style.height = '100px'; // Set a fixed height for the container
+
     // Create and append buttons
     buttonLabels.forEach(label => {
         const button = document.createElement('button');
         button.textContent = label;
         button.style.border = '2px solid slate';
-        button.style.background = 'transparent';
+        if(label != '') button.style.background = '#1a1a1a';
+        else button.style.background = 'transparent';
+        button.style.fontFamily = 'ChiKareGo2';
+        button.setAttribute('data-key', label);
         button.style.color = 'white';
-        button.style.padding = '20px';
-        button.style.zIndex = 2
+        button.style.cursor = 'pointer';
+        button.style.border = '1px solid white'
+        button.style.padding = '8px'; // Adjust padding for better fit in the grid
+        button.style.width = '100%'; // Button occupies the full cell width
+        button.style.height = '100%'; // Button occupies the full cell height
 
         if(label==''){
             button.id = 'glass'
@@ -73,15 +91,57 @@ require(['lib/three', 'lib/tween', 'dungeon', 'relativeDir', 'constants'], funct
             button.textContent = '↷ e';
             button.id = '2';
         }
+        console.log('click handler')
+        button.onclick = handleButtonClick;
 
 
-        button.addEventListener('click', handleButtonClick);
         buttonsContainer.appendChild(button);
     });
-    
+
+    const hex_colors = [
+        '#ffb23e', //orange
+        '#DCD31D', //yellow
+        '#6fcadc', // blue
+        '#FF69B4',
+        '#008000',
+        '#A020F0'
+        // 0xD8CBF, 
+        // 0xD4FF00, 
+    ];
+
+    let mini_map = [
+        [0,0,0,0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,0,0,0],
+        [0,0,0,0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,0,0,0],
+        [0,0,0,0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,0,0,0],
+        [0,0,0,0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,0,0,0],
+        [0,0,0,0, 0, 0, 1, 0, 0, 0, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 0, 0, 1, 1, 0, 0, 0, 0, 0,0,0,0],
+        [0,0,0,0, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 0, 1, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 0,0,0,0],
+        [0,0,0,0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 1, 0, 1, 0, 1, 1, 1, 1, 1, 0, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0,0,0,0],
+        [0,0,0,0, 0, 1, 0, 0, 1, 1, 1, 1, 0, 1, 0, 0, 0, 1, 1, 1, 1, 1, 0, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0,0,0,0],
+        [0,0,0,0, 0, 1, 1, 1, 1, 0, 1, 0, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0,0,0,0],
+        [0,0,0,0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 1, 0, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0,0,0,0],
+        [0,0,0,0, 0, 1, 1, 1, 0, 0, 1, 0, 0, 0, 0, 1, 0, 1, 1, 1, 1, 1, 0, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0,0,0,0],
+        [0,0,0,0, 0, 1, 1, 1, 0, 1, 1, 1, 0, 1, 0, 1, 0, 1, 1, 1, 1, 1, 0, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0,0,0,0],
+        [0,0,0,0, 0, 1, 1, 1, 0, 1, 1, 1, 1, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 0,0,0,0],
+        [0,0,0,0, 0, 1, 1, 1, 0, 1, 1, 1, 0, 1, 0, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 0, 0, 1, 1, 0, 0, 0, 0, 0,0,0,0],
+        [0,0,0,0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,0,0,0],
+        [0,0,0,0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,0,0,0],
+        [0,0,0,0,0,0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,0,0,0],
+        [0,0,0,0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,0,0,0],
+    ];
+
+    function flashButton(button) {
+        const originalBackground = button.style.background;
+        button.style.background = 'grey';
+        setTimeout(() => {
+            button.style.background = originalBackground;
+        }, 100); // Set back after 100 ms
+    }
+
     // Append the container to the body
     document.body.appendChild(buttonsContainer);
 
+    // Append the container to the body
     document.body.appendChild(renderer.domElement);
 
     renderer.shadowMap.type = THREE.PCFSoftShadowMap;
@@ -123,15 +183,10 @@ require(['lib/three', 'lib/tween', 'dungeon', 'relativeDir', 'constants'], funct
 
     var geometry = new THREE.BoxGeometry(0.3, 0.3, 0.3);
 
-    
-    function getRandomNumber(min, max) {
-        return Math.floor(Math.random() * (max - min + 1)) + min;
-    }
-
     const colors = [
         0xffb23e, //orange
         0xDCD31D, //yellow
-        0xA9BF9, // blue
+        0x6fcadc, // blue
         0xFF69B4,
         0x008000,
         0xA020F0
@@ -139,19 +194,26 @@ require(['lib/three', 'lib/tween', 'dungeon', 'relativeDir', 'constants'], funct
         // 0xD4FF00, 
     ];
 
-    let map = [[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 1, 0, 0, 0, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 0, 0, 1, 1, 0, 0, 0, 0, 0],
-    [0, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 0, 1, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 0],
-    [0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 1, 0, 1, 0, 1, 1, 1, 1, 1, 0, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0],
-    [0, 0, 1, 0, 0, 1, 1, 1, 1, 0, 1, 0, 0, 0, 1, 1, 1, 1, 1, 0, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0],
-    [0, 0, 1, 1, 1, 1, 0, 1, 0, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0],
-    [0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 1, 0, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0],
-    [0, 0, 1, 1, 1, 0, 0, 1, 0, 0, 0, 0, 1, 0, 1, 1, 1, 1, 1, 0, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0],
-    [0, 0, 1, 1, 1, 0, 1, 1, 1, 0, 1, 0, 1, 0, 1, 1, 1, 1, 1, 0, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0],
-    [0, 0, 1, 1, 1, 0, 1, 1, 1, 1, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 0],
-    [0, 0, 1, 1, 1, 0, 1, 1, 1, 0, 1, 0, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 0, 0, 1, 1, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]];
-    
+    let map = [
+        [0,0,0,0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,0,0,0],
+        [0,0,0,0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,0,0,0],
+        [0,0,0,0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,0,0,0],
+        [0,0,0,0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,0,0,0],
+        [0,0,0,0, 0, 0, 1, 0, 0, 0, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 0, 0, 1, 1, 0, 0, 0, 0, 0,0,0,0],
+        [0,0,0,0, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 0, 1, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 0,0,0,0],
+        [0,0,0,0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 1, 0, 1, 0, 1, 1, 1, 1, 1, 0, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0,0,0,0],
+        [0,0,0,0, 0, 1, 0, 0, 1, 1, 1, 1, 0, 1, 0, 0, 0, 1, 1, 1, 1, 1, 0, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0,0,0,0],
+        [0,0,0,0, 0, 1, 1, 1, 1, 0, 1, 0, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0,0,0,0],
+        [0,0,0,0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 1, 0, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0,0,0,0],
+        [0,0,0,0, 0, 1, 1, 1, 0, 0, 1, 0, 0, 0, 0, 1, 0, 1, 1, 1, 1, 1, 0, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0,0,0,0],
+        [0,0,0,0, 0, 1, 1, 1, 0, 1, 1, 1, 0, 1, 0, 1, 0, 1, 1, 1, 1, 1, 0, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0,0,0,0],
+        [0,0,0,0, 0, 1, 1, 1, 0, 1, 1, 1, 1, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 0,0,0,0],
+        [0,0,0,0, 0, 1, 1, 1, 0, 1, 1, 1, 0, 1, 0, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 0, 0, 1, 1, 0, 0, 0, 0, 0,0,0,0],
+        [0,0,0,0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,0,0,0],
+        [0,0,0,0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,0,0,0],
+        [0,0,0,0,0,0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,0,0,0],
+        [0,0,0,0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,0,0,0],
+    ];
     function findValidPositions(map, startX, startY, radius) {
         let positions_x = [];
         let positions_z = [];
@@ -188,36 +250,8 @@ require(['lib/three', 'lib/tween', 'dungeon', 'relativeDir', 'constants'], funct
         return validPositions;
     }
     
-    let validPositions = findValidPositions(map, Number(localStorage.getItem('x')) ? Number(localStorage.getItem('x')): 10,Number(localStorage.getItem('y')) ? Number(localStorage.getItem('y')): 6, 4);
+    let validPositions = findValidPositions(mini_map, Number(localStorage.getItem('x')) ? Number(localStorage.getItem('x')): 10,Number(localStorage.getItem('y')) ? Number(localStorage.getItem('y')): 6, 4);
     
-    for (let i = 0; i < 10; i++) {
-        var material = new THREE.MeshPhongMaterial({
-            color: colors[i % colors.length],
-            emissive: colors[i % colors.length],
-            shininess: 200
-        });
-    
-        var cube = new THREE.Mesh(geometry, material);
-        cube.castShadow = true;
-    
-        // Select a random valid position
-        if (validPositions.length > 0) {
-            let randomIndex = Math.floor(Math.random() * validPositions.length);
-            let position = validPositions[randomIndex];
-    
-            cube.position.x = position.x; // Adjust according to your coordinate system
-            cube.position.z = position.z; // Adjust according to your coordinate system
-        }
-    
-        cube.position.y = 0.31;
-        cube.name = 'loot'; //portal
-    
-        var cubeLight = new THREE.PointLight(0x66aac0, 0.6, 3);
-        cube.add(cubeLight);
-        scene.add(cube);
-        cubes.push(cube);
-    }
-
     var ambientLight = new THREE.AmbientLight(0x08131c);
     scene.add(ambientLight);
 
@@ -243,12 +277,193 @@ require(['lib/three', 'lib/tween', 'dungeon', 'relativeDir', 'constants'], funct
         const intersects = raycaster.intersectObjects(scene.children);
 
         for (let i = 0; i < intersects.length; i++) {
-            if(intersects[i].object.name == 'loot' && intersects[i].distance < 1.9){
+            if(intersects[i].object.name.slice(0,4) == 'loot' && intersects[i].distance < 1){
                 // window.parent.postMessage({portal: 'loot'}, 'https://lootbox-client.vercel.app');
-                window.parent.postMessage({portal: 'loot'}, 'https://0xsequence-demos.github.io/demo-lootbox/');
+                window.parent.postMessage({portal: 'loot', color: intersects[i].object.color}, 'http://localhost:5173/demo-lootbox/');
+                // window.parent.postMessage({portal: 'loot'}, 'https://0xsequence-demos.github.io/demo-lootbox/');
+                scene.remove(intersects[i].object)
             }
         }
     }
+
+    const gameContainer = document.getElementById('gameContainer');
+    let playerPosition = { x: 13, y: 9, rotation: 0 };
+    let coloredCells = [];
+    const gridSize = 9;  // This sets the grid size to 9x9
+    const colorIndex = Math.floor(Math.random() * hex_colors.length);
+
+    for (let i = 0; i < mini_map.length; i++) {
+        for (let j = 0; j < mini_map[i].length; j++) {
+            
+            if (Math.random() < 0.1 && mini_map[i][j] === 1) { // 10% chance to assign a color
+                const colorIndex = Math.floor(Math.random() * hex_colors.length);
+
+                coloredCells.push({ x: i, y: j, color: hex_colors[colorIndex], color_loot: colors[colorIndex]});
+                if(coloredCells.length == 10) break;
+            }
+        }
+        if(coloredCells.length == 10) break;
+    }
+
+    console.log(coloredCells)
+
+    for (let i = 0; i < coloredCells.length; i++) {
+        var material = new THREE.MeshPhongMaterial({
+            color: coloredCells[i].color_loot,
+            emissive: coloredCells[i].color_loot,
+            shininess: 200
+        });
+    
+        var cube = new THREE.Mesh(geometry, material);
+        cube.castShadow = true;
+    
+        // Select a random valid position
+        if (coloredCells.length > 0) {
+            // let randomIndex = Math.floor(Math.random() * validPositions.length);
+            // let position = validPositions[randomIndex];
+    
+            // validPositions.splice(randomIndex, 1);
+            const position = coloredCells[i]
+            if(i == 0){
+                console.log()
+                // alert('cube x '+position.x)
+                // alert('cube y '+position.y)
+            }
+            cube.position.x = position.y-3;//13 // // Adjust according to your coordinate system
+            cube.position.z = position.x-3; // Adjust according to your coordinate system
+        }
+    
+        cube.position.y = 0.31;
+        cube.id = i
+        cube.name = `loot`; //portal
+        cube.color = coloredCells[i].color
+    
+        var cubeLight = new THREE.PointLight(0x66aac0, 0.6, 3);
+        cube.add(cubeLight);
+        scene.add(cube);
+        cubes.push(cube);
+    }
+
+    function calculateBounds() {
+        const halfSize = Math.floor(gridSize / 2);
+        const startX = Math.max(0, Math.min(playerPosition.x - halfSize, mini_map[0].length - gridSize));
+        const startY = Math.max(0, Math.min(playerPosition.y - halfSize, mini_map.length - gridSize));
+        return { startX, startY };
+    }
+
+    function renderMap() {
+        const { startX, startY } = calculateBounds();
+        const miniMap = document.createElement('div');
+        miniMap.className = 'mini-map';
+        for (let i = startY; i < startY + gridSize; i++) {
+            const rowDiv = document.createElement('div');
+            rowDiv.className = 'row';
+            for (let j = startX; j < startX + gridSize; j++) {
+                const cell = mini_map[i][j];
+                const cellDiv = document.createElement('div');
+                cellDiv.className = 'cell';
+                if (cell === 1) cellDiv.classList.add('obstacle');
+
+                if (i === playerPosition.y && j === playerPosition.x) {
+                    const playerMarker = document.createElement('div');
+                    playerMarker.className = 'player-marker';
+                    playerMarker.style.transform = `translate(-50%, -50%) rotate(${playerPosition.rotation}deg)`;
+                    cellDiv.appendChild(playerMarker);
+                }
+
+                const coloredCell = coloredCells.find(loot => loot.x === i && loot.y === j);
+                if (coloredCell) {
+                    const colorDiv = document.createElement('div');
+                    colorDiv.className = 'color-marker';
+                    colorDiv.style.backgroundColor = coloredCell.color;
+                    cellDiv.appendChild(colorDiv);
+                }
+                rowDiv.appendChild(cellDiv);
+            }
+            miniMap.appendChild(rowDiv);
+        }
+
+        gameContainer.innerHTML = '';
+        gameContainer.appendChild(miniMap);
+    }
+
+    function handleKeyPress(event) {
+        let newX = playerPosition.x;
+        let newY = playerPosition.y;
+        let rotation = playerPosition.rotation;
+    
+        const adjustedRotation = rotation % 360;
+        switch(event.keyCode) {
+            case 87: // W (up)
+                if (adjustedRotation === 0) {
+                    console.log('up')
+                    console.log(newY)
+                    newY--;
+                    console.log(newY)
+                } else if (adjustedRotation === 90 || adjustedRotation === -270) {
+                    newX++;
+                } else if (adjustedRotation === 180 || adjustedRotation === -180) {
+                    newY++;
+                } else if (adjustedRotation === 270 || adjustedRotation === -90) {
+                    newX--;
+                }
+                break;
+            case 83: // S (down)
+                if (adjustedRotation === 0) {
+                    newY++;
+                } else if (adjustedRotation === 90 || adjustedRotation === -270) {
+                    newX--;
+                } else if (adjustedRotation === 180 || adjustedRotation === -180) {
+                    newY--;
+                } else if (adjustedRotation === 270 || adjustedRotation === -90) {
+                    newX++;
+                }
+                break;
+            case 65: // A (left)
+                if (adjustedRotation === 0) {
+                    console.log('left')
+                    console.log(newX)
+                    newX--;
+                    console.log(newX)
+                } else if (adjustedRotation === 90 || adjustedRotation === -270) {
+                    newY--;
+                } else if (adjustedRotation === 180 || adjustedRotation === -180) {
+                    newX++;
+                } else if (adjustedRotation === 270 || adjustedRotation === -90) {
+                    newY++;
+                }
+                break;
+            case 68: // D (right)
+                if (adjustedRotation === 0) {
+                    console.log('right')
+                    newX++;
+                } else if (adjustedRotation === 90 || adjustedRotation === -270) {
+                    newY++;
+                } else if (adjustedRotation === 180 || adjustedRotation === -180) {
+                    newX--;
+                } else if (adjustedRotation === 270 || adjustedRotation === -90) {
+                    newY--;
+                }
+                break;
+            case 69: // E (rotate right)
+                rotation = (rotation + 90) % 360;
+                break;
+            case 81: // Q (rotate left)
+                rotation = (rotation - 90) % 360;
+                break;
+        }
+        if (newX >= 0 && newY >= 0 && mini_map[newY][newX] === 1) {
+            playerPosition = { x: newX, y: newY, rotation };
+            renderMap();
+        } else {
+            playerPosition.rotation = rotation;
+            renderMap();
+        }
+    }
+    
+
+    document.addEventListener('keydown', handleKeyPress);
+    renderMap();
 
     // Add event listener for mouse click
     document.getElementById('glass').addEventListener('click', onMouseClick, false)
@@ -256,8 +471,12 @@ require(['lib/three', 'lib/tween', 'dungeon', 'relativeDir', 'constants'], funct
 
     document.addEventListener('keydown', function(e) {
         var key = e.keyCode ? e.keyCode : e.which;
-        console.log(key)
         party.handleKey(key);
+        const keyChar = String.fromCharCode(key);
+        const button = document.querySelector(`button[data-key="${keyChar.toUpperCase()}"]`);
+        if (button) {
+            flashButton(button);
+        }
     });
 
     window.addEventListener('resize', function() {

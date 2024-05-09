@@ -263,9 +263,9 @@ require(['lib/three', 'lib/tween', 'dungeon', 'relativeDir', 'constants'], funct
 
     const raycaster = new THREE.Raycaster();
     const mouse = new THREE.Vector2();
+    let coloredCells = [];
 
     function onMouseClick(event) {
-        console.log(event)
         // Calculate mouse position in normalized device coordinates
         mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
         mouse.y = - (event.clientY / window.innerHeight) * 2 + 1;
@@ -278,27 +278,35 @@ require(['lib/three', 'lib/tween', 'dungeon', 'relativeDir', 'constants'], funct
 
         for (let i = 0; i < intersects.length; i++) {
             if(intersects[i].object.name.slice(0,4) == 'loot' && intersects[i].distance < 1){
-                // window.parent.postMessage({portal: 'loot'}, 'https://lootbox-client.vercel.app');
+
                 window.parent.postMessage({portal: 'loot', color: intersects[i].object.color}, 'https://dungeon-minter.vercel.app/');
-                // window.parent.postMessage({portal: 'loot'}, 'https://0xsequence-demos.github.io/demo-lootbox/');
+
+                coloredCells = coloredCells.filter(cell => {
+                    if(String(cell.id) != String(intersects[i].object.loot_id)){
+                        return true
+                    } else {
+                        return false
+                    }
+
+                });
                 scene.remove(intersects[i].object)
+                renderMap()
             }
         }
     }
 
     const gameContainer = document.getElementById('gameContainer');
     let playerPosition = { x: 13, y: 9, rotation: 0 };
-    let coloredCells = [];
     const gridSize = 9;  // This sets the grid size to 9x9
     const colorIndex = Math.floor(Math.random() * hex_colors.length);
-
+    let index = 0
     for (let i = 0; i < mini_map.length; i++) {
         for (let j = 0; j < mini_map[i].length; j++) {
             
             if (Math.random() < 0.1 && mini_map[i][j] === 1) { // 10% chance to assign a color
                 const colorIndex = Math.floor(Math.random() * hex_colors.length);
-
-                coloredCells.push({ x: i, y: j, color: hex_colors[colorIndex], color_loot: colors[colorIndex]});
+                coloredCells.push({ x: i, y: j, color: hex_colors[colorIndex], color_loot: colors[colorIndex], id: index});
+                index++
                 if(coloredCells.length == 10) break;
             }
         }
@@ -329,6 +337,7 @@ require(['lib/three', 'lib/tween', 'dungeon', 'relativeDir', 'constants'], funct
                 // alert('cube x '+position.x)
                 // alert('cube y '+position.y)
             }
+            cube.loot_id = i
             cube.position.x = position.y-3;//13 // // Adjust according to your coordinate system
             cube.position.z = position.x-3; // Adjust according to your coordinate system
         }
@@ -352,8 +361,12 @@ require(['lib/three', 'lib/tween', 'dungeon', 'relativeDir', 'constants'], funct
     }
 
     function renderMap() {
+        if(document.getElementById('mini-map')) {
+            document.getElementById('mini-map').remove()
+        }
         const { startX, startY } = calculateBounds();
         const miniMap = document.createElement('div');
+        miniMap.id = 'mini-map';
         miniMap.className = 'mini-map';
         for (let i = startY; i < startY + gridSize; i++) {
             const rowDiv = document.createElement('div');
@@ -370,7 +383,7 @@ require(['lib/three', 'lib/tween', 'dungeon', 'relativeDir', 'constants'], funct
                     playerMarker.style.transform = `translate(-50%, -50%) rotate(${playerPosition.rotation}deg)`;
                     cellDiv.appendChild(playerMarker);
                 }
-
+                console.log('count:' + coloredCells.length)
                 const coloredCell = coloredCells.find(loot => loot.x === i && loot.y === j);
                 if (coloredCell) {
                     const colorDiv = document.createElement('div');

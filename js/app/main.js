@@ -5,6 +5,82 @@ require(['lib/three', 'lib/tween', 'dungeon', 'relativeDir', 'constants'], funct
 
     renderer.setPixelRatio(window.devicePixelRatio);
     renderer.setSize(window.innerWidth, window.innerHeight);
+    function handleKeyPress(event) {
+        let newX = playerPosition.x;
+        let newY = playerPosition.y;
+        let rotation = playerPosition.rotation;
+        console.log(event)
+        const adjustedRotation = rotation % 360;
+        switch(event.keyCode) {
+            case 87: // W (up)
+                if (adjustedRotation === 0) {
+                    console.log('up')
+                    console.log(newY)
+                    newY--;
+                    console.log(newY)
+                } else if (adjustedRotation === 90 || adjustedRotation === -270) {
+                    newX++;
+                } else if (adjustedRotation === 180 || adjustedRotation === -180) {
+                    newY++;
+                } else if (adjustedRotation === 270 || adjustedRotation === -90) {
+                    newX--;
+                }
+                break;
+            case 83: // S (down)
+                if (adjustedRotation === 0) {
+                    newY++;
+                } else if (adjustedRotation === 90 || adjustedRotation === -270) {
+                    newX--;
+                } else if (adjustedRotation === 180 || adjustedRotation === -180) {
+                    newY--;
+                } else if (adjustedRotation === 270 || adjustedRotation === -90) {
+                    newX++;
+                }
+                break;
+            case 65: // A (left)
+                if (adjustedRotation === 0) {
+                    console.log('left')
+                    console.log(newX)
+                    newX--;
+                    console.log(newX)
+                } else if (adjustedRotation === 90 || adjustedRotation === -270) {
+                    newY--;
+                } else if (adjustedRotation === 180 || adjustedRotation === -180) {
+                    newX++;
+                } else if (adjustedRotation === 270 || adjustedRotation === -90) {
+                    newY++;
+                }
+                break;
+            case 68: // D (right)
+                if (adjustedRotation === 0) {
+                    console.log('right')
+                    newX++;
+                } else if (adjustedRotation === 90 || adjustedRotation === -270) {
+                    newY++;
+                } else if (adjustedRotation === 180 || adjustedRotation === -180) {
+                    newX--;
+                } else if (adjustedRotation === 270 || adjustedRotation === -90) {
+                    newY--;
+                }
+                break;
+            case 69: // E (rotate right)
+                rotation = (rotation + 90) % 360;
+                break;
+            case 81: // Q (rotate left)
+                rotation = (rotation - 90) % 360;
+                break;
+        }
+        if (newX >= 0 && newY >= 0 && mini_map[newY][newX] === 1) {
+            playerPosition = { x: newX, y: newY, rotation };
+            renderMap();
+        } else {
+            playerPosition.rotation = rotation;
+            renderMap();
+        }
+    }
+    
+
+    document.addEventListener('keydown', handleKeyPress);
 
     function handleButtonClick(event) {
         console.log(event)
@@ -12,6 +88,7 @@ require(['lib/three', 'lib/tween', 'dungeon', 'relativeDir', 'constants'], funct
         const compass = event.target.textContent.toLowerCase()
 
         let key_code;
+        handleKeyPress(event)
         switch(compass){
             case 'q':
                 key_code = 81
@@ -77,11 +154,12 @@ require(['lib/three', 'lib/tween', 'dungeon', 'relativeDir', 'constants'], funct
         if(label==''){
             button.id = 'glass'
             button.style.border = '0px';
+            button.style.backgroundColor = 'blue'
             button.style.top = '140px'
             button.style.left = '70px'
-            button.style.height = '200px'
+            button.style.height = '300px'
 
-            button.style.padding = '200px';
+            button.style.padding = '10px';
             button.style.position = 'fixed';
             button.style.outline = 'none';
             button.style.zIndex = 100
@@ -404,83 +482,6 @@ require(['lib/three', 'lib/tween', 'dungeon', 'relativeDir', 'constants'], funct
         gameContainer.innerHTML = '';
         gameContainer.appendChild(miniMap);
     }
-
-    function handleKeyPress(event) {
-        let newX = playerPosition.x;
-        let newY = playerPosition.y;
-        let rotation = playerPosition.rotation;
-    
-        const adjustedRotation = rotation % 360;
-        switch(event.keyCode) {
-            case 87: // W (up)
-                if (adjustedRotation === 0) {
-                    console.log('up')
-                    console.log(newY)
-                    newY--;
-                    console.log(newY)
-                } else if (adjustedRotation === 90 || adjustedRotation === -270) {
-                    newX++;
-                } else if (adjustedRotation === 180 || adjustedRotation === -180) {
-                    newY++;
-                } else if (adjustedRotation === 270 || adjustedRotation === -90) {
-                    newX--;
-                }
-                break;
-            case 83: // S (down)
-                if (adjustedRotation === 0) {
-                    newY++;
-                } else if (adjustedRotation === 90 || adjustedRotation === -270) {
-                    newX--;
-                } else if (adjustedRotation === 180 || adjustedRotation === -180) {
-                    newY--;
-                } else if (adjustedRotation === 270 || adjustedRotation === -90) {
-                    newX++;
-                }
-                break;
-            case 65: // A (left)
-                if (adjustedRotation === 0) {
-                    console.log('left')
-                    console.log(newX)
-                    newX--;
-                    console.log(newX)
-                } else if (adjustedRotation === 90 || adjustedRotation === -270) {
-                    newY--;
-                } else if (adjustedRotation === 180 || adjustedRotation === -180) {
-                    newX++;
-                } else if (adjustedRotation === 270 || adjustedRotation === -90) {
-                    newY++;
-                }
-                break;
-            case 68: // D (right)
-                if (adjustedRotation === 0) {
-                    console.log('right')
-                    newX++;
-                } else if (adjustedRotation === 90 || adjustedRotation === -270) {
-                    newY++;
-                } else if (adjustedRotation === 180 || adjustedRotation === -180) {
-                    newX--;
-                } else if (adjustedRotation === 270 || adjustedRotation === -90) {
-                    newY--;
-                }
-                break;
-            case 69: // E (rotate right)
-                rotation = (rotation + 90) % 360;
-                break;
-            case 81: // Q (rotate left)
-                rotation = (rotation - 90) % 360;
-                break;
-        }
-        if (newX >= 0 && newY >= 0 && mini_map[newY][newX] === 1) {
-            playerPosition = { x: newX, y: newY, rotation };
-            renderMap();
-        } else {
-            playerPosition.rotation = rotation;
-            renderMap();
-        }
-    }
-    
-
-    document.addEventListener('keydown', handleKeyPress);
     renderMap();
 
     // Add event listener for mouse click

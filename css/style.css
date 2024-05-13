@@ -28,9 +28,10 @@ body {
   @media (max-width: 600px) {
 
     .mini-map {
+      display: none;
         top: -17px;
         right: 0px;
-        transform: scale(0.7); /* Reduces size to 70% of the original on mobile screens */
+        /* transform: scale(0.7); Reduces size to 70% of the original on mobile screens */
     }
 }
 

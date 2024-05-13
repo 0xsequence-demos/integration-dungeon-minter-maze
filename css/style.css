@@ -22,8 +22,11 @@ body {
     flex-direction: column;
     border: 2px solid grey; /* Grey border around the mini-map */
   }
-  
+  .glass {
+      display: none;
+  }
   @media (max-width: 600px) {
+
     .mini-map {
         top: -17px;
         right: 0px;

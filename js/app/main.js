@@ -77,8 +77,12 @@ require(['lib/three', 'lib/tween', 'dungeon', 'relativeDir', 'constants'], funct
         if(label==''){
             button.id = 'glass'
             button.style.border = '0px';
-            button.style.padding = '20000px';
-            button.style.position = 'absolute';
+            button.style.top = '140px'
+            button.style.left = '70px'
+            button.style.height = '200px'
+
+            button.style.padding = '200px';
+            button.style.position = 'fixed';
             button.style.outline = 'none';
             button.style.zIndex = 100
         }
@@ -278,7 +282,7 @@ require(['lib/three', 'lib/tween', 'dungeon', 'relativeDir', 'constants'], funct
         const intersects = raycaster.intersectObjects(scene.children);
 
         for (let i = 0; i < intersects.length; i++) {
-            if(intersects[i].object.name.slice(0,4) == 'loot' && intersects[i].distance < 2){
+            if(intersects[i].object.name.slice(0,4) == 'loot' && intersects[i].distance < 1){
 
                 window.parent.postMessage({portal: 'loot', color: intersects[i].object.color}, 'https://dungeon-minter.vercel.app/');
 

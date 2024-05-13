@@ -154,12 +154,11 @@ require(['lib/three', 'lib/tween', 'dungeon', 'relativeDir', 'constants'], funct
         if(label==''){
             button.id = 'glass'
             button.style.border = '0px';
-            button.style.backgroundColor = 'blue'
             button.style.top = '140px'
             button.style.left = '70px'
-            button.style.height = '300px'
+            button.style.height = '200px'
 
-            button.style.padding = '10px';
+            button.style.padding = '200px';
             button.style.position = 'fixed';
             button.style.outline = 'none';
             button.style.zIndex = 100

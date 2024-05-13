@@ -278,7 +278,7 @@ require(['lib/three', 'lib/tween', 'dungeon', 'relativeDir', 'constants'], funct
         const intersects = raycaster.intersectObjects(scene.children);
 
         for (let i = 0; i < intersects.length; i++) {
-            if(intersects[i].object.name.slice(0,4) == 'loot' && intersects[i].distance < 1){
+            if(intersects[i].object.name.slice(0,4) == 'loot' && intersects[i].distance < 2){
 
                 window.parent.postMessage({portal: 'loot', color: intersects[i].object.color}, 'https://dungeon-minter.vercel.app/');
 

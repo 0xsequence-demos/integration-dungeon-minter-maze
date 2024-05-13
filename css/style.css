@@ -16,13 +16,22 @@ body {
 .mini-map {
     position: fixed;
     height: 180px;
-    top: 30px;
-    left: 30px;
+    top: 15px;
+    right: 30px;
     width: 180px;
     flex-direction: column;
     border: 2px solid grey; /* Grey border around the mini-map */
   }
   
+  @media (max-width: 600px) {
+    .mini-map {
+        top: -17px;
+        right: 65px;
+        transform: scale(0.7); /* Reduces size to 70% of the original on mobile screens */
+    }
+}
+
+
   .row {
     display: flex;
   }

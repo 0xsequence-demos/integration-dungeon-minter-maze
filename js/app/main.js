@@ -62,13 +62,14 @@ require(['lib/three', 'lib/tween', 'dungeon', 'relativeDir', 'constants'], funct
         const button = document.createElement('button');
         button.textContent = label;
         button.style.border = '2px solid slate';
-        if(label != '') button.style.background = '#1a1a1a';
+        if(label != '') button.style.background = 'black';
         else button.style.background = 'transparent';
         button.style.fontFamily = 'ChiKareGo2';
         button.setAttribute('data-key', label);
         button.style.color = 'white';
         button.style.cursor = 'pointer';
-        button.style.border = '1px solid white'
+        button.style.fontSize = '25px';
+        button.style.border = '2px #eee inset'
         button.style.padding = '8px'; // Adjust padding for better fit in the grid
         button.style.width = '100%'; // Button occupies the full cell width
         button.style.height = '100%'; // Button occupies the full cell height

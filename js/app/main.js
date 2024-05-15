@@ -157,7 +157,6 @@ require(['lib/three', 'lib/tween', 'dungeon', 'relativeDir', 'constants'], funct
             button.style.top = '140px'
             button.style.left = '70px'
             button.style.height = '200px'
-
             button.style.padding = '200px';
             button.style.position = 'fixed';
             button.style.outline = 'none';

@@ -1,4 +1,4 @@
-import { NearestFilter, TextureLoader } from "three";
+import { NearestFilter, SphereGeometry, TextureLoader } from "three";
 import { ObjectLoader } from "three";
 import { PointLight } from "three";
 import {
@@ -655,33 +655,25 @@ export function game(pivot: Object3D, camera: PerspectiveCamera) {
 	const modelLoader = new ObjectLoader();
 	const textureLoader = new TextureLoader();
 
-	modelLoader.load("models/bare_bulb.json", (obj) => {
-		textureLoader.load("textures/bare_bulb_color.png", (color) => {
-			color.magFilter = NearestFilter;
-			textureLoader.load("textures/bare_bulb_emissive.png", (emissive) => {
-				const material = new MeshPhongMaterial({
-					map: color,
-					emissive: 0xffffff,
-					emissiveMap: emissive,
-				});
-
-				for (let i = 0; i < lightCoords.length; i += 1) {
-					const bulb = new Mesh(obj, material);
-					bulb.position.x = lightCoords[i][0];
-					bulb.position.z = lightCoords[i][1];
-					// bulb.castShadow = true;
-					const bulbLight = new PointLight(0xfff0dd, 0.8, 4);
-					bulbLight.position.y = 0.871;
-					//bulbLight.castShadow = true;
-					bulbLight.shadow.mapSize.setScalar(512);
-					bulbLight.shadow.camera.near = 0.075;
-					bulbLight.shadow.camera.far = 0.13;
-					bulb.add(bulbLight);
-					pivot.add(bulb);
-				}
-			});
-		});
+	const bulbGeo = new SphereGeometry(0.05, 32, 16);
+	const bulbMaterial = new MeshPhongMaterial({
+		color: 0xffffcc,
+		emissive: 0xffffcc,
 	});
+	for (let i = 0; i < lightCoords.length; i += 1) {
+		const bulb = new Mesh(bulbGeo, bulbMaterial);
+		bulb.position.x = lightCoords[i][0];
+		bulb.position.z = lightCoords[i][1];
+		bulb.position.y = 0.871;
+		// bulb.castShadow = true;
+		const bulbLight = new PointLight(0xfff0dd, 0.8, 4);
+		//bulbLight.castShadow = true;
+		bulbLight.shadow.mapSize.setScalar(512);
+		bulbLight.shadow.camera.near = 0.075;
+		bulbLight.shadow.camera.far = 0.13;
+		bulb.add(bulbLight);
+		pivot.add(bulb);
+	}
 
 	let time = 0;
 	return function simulate(dt: number) {

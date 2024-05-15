@@ -2,6 +2,27 @@ let cubes = []
 require(['lib/three', 'lib/tween', 'dungeon', 'relativeDir', 'constants'], function(THREE, TWEEN, Dungeon, RelativeDir, Const) {
     var scene = new THREE.Scene();
     var renderer = new THREE.WebGLRenderer();
+    var keypressSpeedThrottle = 300
+    function throttle(func, limit) {
+        let lastFunc;
+        let lastRan;
+        return function() {
+            const context = this;
+            const args = arguments;
+            if (!lastRan) {
+                func.apply(context, args);
+                lastRan = Date.now();
+            } else {
+                clearTimeout(lastFunc);
+                lastFunc = setTimeout(function() {
+                    if ((Date.now() - lastRan) >= limit) {
+                        func.apply(context, args);
+                        lastRan = Date.now();
+                    }
+                }, limit - (Date.now() - lastRan));
+            }
+        }
+    }
 
     renderer.setPixelRatio(window.devicePixelRatio);
     renderer.setSize(window.innerWidth, window.innerHeight);
@@ -80,7 +101,7 @@ require(['lib/three', 'lib/tween', 'dungeon', 'relativeDir', 'constants'], funct
     }
     
 
-    document.addEventListener('keydown', handleKeyPress);
+    // document.addEventListener('keydown', );
 
     function handleButtonClick(event) {
         console.log(event)
@@ -156,8 +177,8 @@ require(['lib/three', 'lib/tween', 'dungeon', 'relativeDir', 'constants'], funct
             button.style.border = '0px';
             button.style.top = '140px'
             button.style.left = '70px'
-            button.style.height = '200px'
-            button.style.padding = '200px';
+            button.style.height = '100px'
+            button.style.padding = '100px';
             button.style.position = 'fixed';
             button.style.outline = 'none';
             button.style.zIndex = 100
@@ -361,6 +382,7 @@ require(['lib/three', 'lib/tween', 'dungeon', 'relativeDir', 'constants'], funct
             if(intersects[i].object.name.slice(0,4) == 'loot' && intersects[i].distance < 1){
 
                 window.parent.postMessage({portal: 'loot', color: intersects[i].object.color}, 'https://dungeon-minter.vercel.app/');
+                // window.parent.postMessage({portal: 'loot', color: intersects[i].object.color}, 'http://localhost:5173/');
 
                 coloredCells = coloredCells.filter(cell => {
                     if(String(cell.id) != String(intersects[i].object.loot_id)){
@@ -486,7 +508,8 @@ require(['lib/three', 'lib/tween', 'dungeon', 'relativeDir', 'constants'], funct
     document.getElementById('glass').addEventListener('click', onMouseClick, false)
     window.addEventListener('click', onMouseClick, false);
 
-    document.addEventListener('keydown', function(e) {
+    document.addEventListener('keydown', throttle(function(e) {
+        throttle(handleKeyPress(e), keypressSpeedThrottle)
         var key = e.keyCode ? e.keyCode : e.which;
         party.handleKey(key);
         const keyChar = String.fromCharCode(key);
@@ -494,7 +517,7 @@ require(['lib/three', 'lib/tween', 'dungeon', 'relativeDir', 'constants'], funct
         if (button) {
             flashButton(button);
         }
-    });
+    },keypressSpeedThrottle));
 
     window.addEventListener('resize', function() {
         party.camera.aspect = window.innerWidth/window.innerHeight;

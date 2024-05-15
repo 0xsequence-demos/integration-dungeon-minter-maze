@@ -563,7 +563,7 @@ export function game(pivot: Object3D, camera: PerspectiveCamera) {
 		cube.name = "loot"; //portal
 		cube.userData.color = coloredCells[i].color;
 
-		const cubeLight = new PointLight(0x66aac0, 0.6, 3);
+		const cubeLight = new PointLight(coloredCells[i].color, 0.6, 3);
 		cube.add(cubeLight);
 		pivot.add(cube);
 		cubes.push(cube);

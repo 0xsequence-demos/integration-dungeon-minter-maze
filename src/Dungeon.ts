@@ -80,11 +80,14 @@ export class Dungeon {
 
 	// spawn_loc = {x: Number(localStorage.getItem('x')), y: Number(localStorage.getItem('y'))};
 	spawn_dir = Direction.NORTH;
-	constructor(private camera: PerspectiveCamera) {
+	constructor(
+		private pivot: Object3D,
+		private camera: PerspectiveCamera,
+	) {
 		//
 	}
 
-	partyCollidesWith(x, y) {
+	partyCollidesWith(x: number, y: number) {
 		if (y >= 0 && y < this.map.length) {
 			const row = this.map[y];
 			if (x >= 0 && x < row.length) {
@@ -94,15 +97,16 @@ export class Dungeon {
 		return false;
 	}
 
-	spawnParty(x, y, spawn_dir) {
+	spawnParty(x: number, y: number, spawn_dir: Direction) {
 		if (x) {
 			console.log("spawning");
-			return new Party(this.camera, x, y, spawn_dir, (x, y) =>
+			return new Party(this.pivot, this.camera, x, y, spawn_dir, (x, y) =>
 				this.partyCollidesWith(x, y),
 			);
 		}
 		console.log("default");
 		return new Party(
+			this.pivot,
 			this.camera,
 			this.spawn_loc.x,
 			this.spawn_loc.y,

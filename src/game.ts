@@ -18,7 +18,7 @@ import type { Party } from "./Party";
 type ColoredCell = {
 	x: number;
 	y: number;
-	color: number;
+	color: string;
 	color_loot: number;
 	id: number;
 };
@@ -301,7 +301,7 @@ export function game(pivot: Object3D, camera: PerspectiveCamera) {
 	// Append the container to the body
 	document.body.appendChild(buttonsContainer);
 
-	const dungeon = new Dungeon(camera);
+	const dungeon = new Dungeon(pivot, camera);
 
 	let party: Party;
 
@@ -464,10 +464,7 @@ export function game(pivot: Object3D, camera: PerspectiveCamera) {
 	pivot.add(ambientLight);
 
 	party.light.castShadow = true;
-	party.light.shadowMapWidth = 4096;
-	party.light.shadowMapHeight = 4096;
-
-	pivot.add(party.camera);
+	party.light.shadow.mapSize.setScalar(4096);
 
 	const raycaster = new Raycaster();
 	const mouse = new Vector2();
@@ -479,7 +476,7 @@ export function game(pivot: Object3D, camera: PerspectiveCamera) {
 		mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
 
 		// Update the picking ray with the camera and mouse position
-		raycaster.setFromCamera(mouse, party.camera);
+		raycaster.setFromCamera(mouse, camera);
 
 		// Calculate objects intersecting the picking ray
 		const intersects = raycaster.intersectObjects(pivot.children);

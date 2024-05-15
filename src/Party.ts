@@ -1,4 +1,4 @@
-import { type PerspectiveCamera, PointLight } from "three";
+import { type Object3D, type PerspectiveCamera, PointLight } from "three";
 import { Easing, Tween } from "three/examples/jsm/libs/tween.module.js";
 import { CAMERA_HEIGHT, FOV, KEYBINDINGS, PARTY } from "./constants";
 import {
@@ -96,6 +96,7 @@ export class Party {
 	};
 	light: PointLight;
 	constructor(
+		pivot: Object3D,
 		private camera: PerspectiveCamera,
 		x: number,
 		y: number,
@@ -113,13 +114,13 @@ export class Party {
 			PARTY.LIGHT.INTENSITY,
 			PARTY.LIGHT.RADIUS,
 		);
+		pivot.add(this.light);
 		this.light.position.x = PARTY.LIGHT.OFFSET.x;
 		this.light.position.z = PARTY.LIGHT.OFFSET.y;
 		this.light.position.y = PARTY.LIGHT.OFFSET.z;
 
 		this.light.shadow.bias = 0.01; // Prevents shadow lines at seams in walls. Not sure why. Side-effects?
 		this.light.shadow.camera.near = 0.05;
-		this.camera.add(this.light); // Parent the light to the camera
 
 		this.updateFov();
 		this.updateLocation();
@@ -254,5 +255,6 @@ export class Party {
 			this.keyActions[this.nextMove].action();
 			this.nextMove = null;
 		}
+		this.light.position.copy(this.camera.position);
 	}
 }

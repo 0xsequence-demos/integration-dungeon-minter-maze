@@ -13,19 +13,19 @@ export enum Direction {
 	WEST = 3,
 }
 
-export function relativeTo(dir, relDir) {
+export function relativeTo(dir: Direction, relDir: RelativeDir) {
 	return mod(dir + relDir, 4);
 }
 
-export function rotatedCW(dir) {
+export function rotatedCW(dir: Direction) {
 	return mod(dir + 1, 4);
 }
 
-export function rotatedCCW(dir) {
+export function rotatedCCW(dir: Direction) {
 	return mod(dir - 1, 4);
 }
 
-export function deltaX(dir) {
+export function deltaX(dir: Direction) {
 	switch (dir) {
 		case 0:
 		case 2:

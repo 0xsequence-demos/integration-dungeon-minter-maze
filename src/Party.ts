@@ -134,8 +134,6 @@ export class Party {
 
 	updateRotation() {
 		this.camera.rotation.y = asRadians(this.direction);
-
-		this.camera.updateProjectionMatrix();
 	}
 
 	updateFov() {
@@ -143,7 +141,7 @@ export class Party {
 		this.camera.fov = vFov;
 	}
 
-	move(dir) {
+	move(dir: Direction) {
 		this.moving = true;
 
 		const newX = this.position.x + deltaX(dir);
@@ -154,9 +152,6 @@ export class Party {
 				x: [this.position.x + deltaX(dir) * 0.05, this.position.x],
 				z: [this.position.y + deltaY(dir) * 0.05, this.position.y],
 			};
-			//todo
-			console.log(bumpPath.x[1]);
-			console.log(bumpPath.z[1]);
 			localStorage.setItem("x", bumpPath.x[1].toString());
 			localStorage.setItem("y", bumpPath.x[1].toString());
 			localStorage.setItem("direction-1", this.direction.toString());
@@ -171,10 +166,6 @@ export class Party {
 		} else {
 			this.position.x = newX;
 			this.position.y = newY;
-
-			//todo
-			console.log(this.position.x);
-			console.log(this.position.y);
 
 			localStorage.setItem("direction-1", this.direction.toString());
 
@@ -192,18 +183,18 @@ export class Party {
 		}
 	}
 
-	moveRelative(relDir) {
+	moveRelative(relDir: RelativeDir) {
 		const moveDir = relativeTo(this.direction, relDir);
 		this.move(moveDir);
 	}
 
-	setLocation(x, y) {
+	setLocation(x: number, y: number) {
 		this.position.x = x;
 		this.position.y = y;
 		this.updateLocation();
 	}
 
-	rotateTo(dir) {
+	rotateTo(dir: Direction) {
 		this.moving = true;
 
 		this.direction = dir;
@@ -216,9 +207,6 @@ export class Party {
 		new Tween(this.camera.rotation)
 			.to({ y: this.camera.rotation.y + rotateAmount }, PARTY.ROTATE_TIME)
 			.easing(Easing.Sinusoidal.InOut)
-			.onUpdate(() => {
-				this.camera.updateProjectionMatrix();
-			})
 			.onComplete(() => {
 				this.moving = false;
 				this.updateRotation();
@@ -227,16 +215,14 @@ export class Party {
 	}
 
 	rotateCW() {
-		console.log(rotatedCW(this.direction));
 		this.rotateTo(rotatedCW(this.direction));
 	}
 
 	rotateCCW() {
-		console.log(rotatedCCW(this.direction));
 		this.rotateTo(rotatedCCW(this.direction));
 	}
 
-	handleKey(key) {
+	handleKey(key: number) {
 		for (const action in this.keyActions) {
 			if (KEYBINDINGS[action].indexOf(key) >= 0) {
 				const actionObject = this.keyActions[action];

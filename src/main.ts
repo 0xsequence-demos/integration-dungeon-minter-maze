@@ -3,7 +3,7 @@ import { PerspectiveCamera } from "three";
 import { Scene } from "three";
 import { Object3D } from "three";
 import type {} from "vite";
-import { game } from "./game";
+import { Game } from "./Game";
 import { initResizeHandler } from "./initResizeHandler";
 // import { testModelCluster } from "./testModelCluster"
 
@@ -20,6 +20,7 @@ const camera = new PerspectiveCamera(
 
 scene.add(camera);
 camera.position.set(0, 0, 5);
+camera.frustumCulled;
 
 // camera.position.set(Number(c[0]), Number(c[1]) + 1, Number(c[2]))
 const renderer = new WebGLRenderer();
@@ -62,15 +63,14 @@ const gamePivot = new Object3D();
 scene.add(gamePivot);
 
 if (import.meta.hot) {
-	import.meta.hot.accept("./game", (mod) => {
+	import.meta.hot.accept("./Game", (mod) => {
 		while (gamePivot.children.length > 0) {
 			gamePivot.remove(gamePivot.children[0]);
 		}
-		mod.game(gamePivot, camera).then((s) => {
-			simulate = s;
-		});
+		game.cleanup();
+		game = new mod.Game(gamePivot, camera);
+		simulate = game.simulate;
 	});
 }
-game(gamePivot, camera).then((s) => {
-	simulate = s;
-});
+let game = new Game(gamePivot, camera);
+simulate = game.simulate;

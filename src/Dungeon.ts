@@ -11,7 +11,7 @@ import {
 } from "three";
 import { Party } from "./Party";
 import { STARTING_X, STARTING_Y, TILES } from "./constants";
-import { Direction } from "./directionUtils";
+import { Direction, RelativeDir } from "./directionUtils";
 import { loadMapDataFromImage } from "./loadMapDataFromImage";
 
 export class Dungeon {

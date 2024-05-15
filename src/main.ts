@@ -66,7 +66,11 @@ if (import.meta.hot) {
 		while (gamePivot.children.length > 0) {
 			gamePivot.remove(gamePivot.children[0]);
 		}
-		simulate = mod.game(gamePivot, camera);
+		mod.game(gamePivot, camera).then((s) => {
+			simulate = s;
+		});
 	});
 }
-simulate = game(gamePivot, camera);
+game(gamePivot, camera).then((s) => {
+	simulate = s;
+});

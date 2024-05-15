@@ -1,3 +1,6 @@
+export const STARTING_X = 13;
+export const STARTING_Y = 9;
+
 export const FOV = 110;
 
 export const CAMERA_HEIGHT = 0.3;

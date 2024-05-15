@@ -1,5 +1,4 @@
-import { SphereGeometry, TextureLoader } from "three";
-import { ObjectLoader } from "three";
+import { SphereGeometry } from "three";
 import { PointLight } from "three";
 import {
 	AmbientLight,
@@ -14,6 +13,7 @@ import {
 import { update } from "three/examples/jsm/libs/tween.module.js";
 import { Dungeon } from "./Dungeon";
 import type { Party } from "./Party";
+import { STARTING_X, STARTING_Y } from "./constants";
 
 type ColoredCell = {
 	x: number;
@@ -23,16 +23,20 @@ type ColoredCell = {
 	id: number;
 };
 
-export function game(pivot: Object3D, camera: PerspectiveCamera) {
+export async function game(pivot: Object3D, camera: PerspectiveCamera) {
+	const dungeon = new Dungeon(pivot, camera);
+	await dungeon.loadMap("/textures/mini_map.png");
+
 	const cubes: Mesh[] = [];
 
 	const gameContainer = document.getElementById("gameContainer")!;
+
+	let playerPosition = { x: STARTING_X, y: STARTING_Y, rotation: 0 };
 
 	function handleKeyPress(event) {
 		let newX = playerPosition.x;
 		let newY = playerPosition.y;
 		let rotation = playerPosition.rotation;
-		console.log(event);
 		const adjustedRotation = rotation % 360;
 		switch (event.keyCode) {
 			case 87: // W (up)
@@ -93,7 +97,7 @@ export function game(pivot: Object3D, camera: PerspectiveCamera) {
 				rotation = (rotation - 90) % 360;
 				break;
 		}
-		if (newX >= 0 && newY >= 0 && mini_map[newY][newX] === 1) {
+		if (newX >= 0 && newY >= 0 && dungeon.map[newY][newX] === 1) {
 			playerPosition = { x: newX, y: newY, rotation };
 			renderMap();
 		} else {
@@ -161,7 +165,6 @@ export function game(pivot: Object3D, camera: PerspectiveCamera) {
 	buttonsContainer.style.width = "150px"; // Set a fixed width for the container
 	buttonsContainer.style.height = "100px"; // Set a fixed height for the container
 
-
 	// Create and append buttons
 	for (const label of buttonLabels) {
 		const button = document.createElement("button");
@@ -218,81 +221,6 @@ export function game(pivot: Object3D, camera: PerspectiveCamera) {
 		// 0xD4FF00,
 	];
 
-	const mini_map = [
-		[
-			0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-			0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-		],
-		[
-			0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-			0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-		],
-		[
-			0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-			0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-		],
-		[
-			0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-			0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-		],
-		[
-			0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1,
-			1, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0,
-		],
-		[
-			0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 0, 1, 0, 0, 0, 0, 0, 1, 0, 1, 0,
-			0, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0,
-		],
-		[
-			0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 1, 0, 1, 0, 1, 1, 1, 1, 1, 0, 1, 0,
-			1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0,
-		],
-		[
-			0, 0, 0, 0, 0, 1, 0, 0, 1, 1, 1, 1, 0, 1, 0, 0, 0, 1, 1, 1, 1, 1, 0, 1, 0,
-			1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0,
-		],
-		[
-			0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 1, 0, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1,
-			1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0,
-		],
-		[
-			0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 1, 0, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1,
-			1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0,
-		],
-		[
-			0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 1, 0, 0, 0, 0, 1, 0, 1, 1, 1, 1, 1, 0, 1, 0,
-			1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0,
-		],
-		[
-			0, 0, 0, 0, 0, 1, 1, 1, 0, 1, 1, 1, 0, 1, 0, 1, 0, 1, 1, 1, 1, 1, 0, 1, 0,
-			1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0,
-		],
-		[
-			0, 0, 0, 0, 0, 1, 1, 1, 0, 1, 1, 1, 1, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0,
-			0, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0,
-		],
-		[
-			0, 0, 0, 0, 0, 1, 1, 1, 0, 1, 1, 1, 0, 1, 0, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1,
-			1, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0,
-		],
-		[
-			0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-			0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-		],
-		[
-			0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-			0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-		],
-		[
-			0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-			0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-		],
-		[
-			0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-			0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-		],
-	];
-
 	function flashButton(button) {
 		const originalBackground = button.style.background;
 		button.style.background = "grey";
@@ -303,8 +231,6 @@ export function game(pivot: Object3D, camera: PerspectiveCamera) {
 
 	// Append the container to the body
 	document.body.appendChild(buttonsContainer);
-
-	const dungeon = new Dungeon(pivot, camera);
 
 	let party: Party;
 
@@ -327,7 +253,7 @@ export function game(pivot: Object3D, camera: PerspectiveCamera) {
 			Number(localStorage.getItem("direction-1")),
 		);
 	} else {
-		party = dungeon.spawnParty(10, 6, direction.FORWARD);
+		party = dungeon.spawnParty(STARTING_X, STARTING_Y, direction.FORWARD);
 	}
 
 	// dungeon.addMeshesToScene(pivot, party.camera);
@@ -346,80 +272,6 @@ export function game(pivot: Object3D, camera: PerspectiveCamera) {
 		// 0xD4FF00,
 	];
 
-	const map = [
-		[
-			0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-			0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-		],
-		[
-			0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-			0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-		],
-		[
-			0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-			0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-		],
-		[
-			0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-			0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-		],
-		[
-			0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1,
-			1, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0,
-		],
-		[
-			0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 0, 1, 0, 0, 0, 0, 0, 1, 0, 1, 0,
-			0, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0,
-		],
-		[
-			0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 1, 0, 1, 0, 1, 1, 1, 1, 1, 0, 1, 0,
-			1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0,
-		],
-		[
-			0, 0, 0, 0, 0, 1, 0, 0, 1, 1, 1, 1, 0, 1, 0, 0, 0, 1, 1, 1, 1, 1, 0, 1, 0,
-			1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0,
-		],
-		[
-			0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 1, 0, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1,
-			1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0,
-		],
-		[
-			0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 1, 0, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1,
-			1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0,
-		],
-		[
-			0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 1, 0, 0, 0, 0, 1, 0, 1, 1, 1, 1, 1, 0, 1, 0,
-			1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0,
-		],
-		[
-			0, 0, 0, 0, 0, 1, 1, 1, 0, 1, 1, 1, 0, 1, 0, 1, 0, 1, 1, 1, 1, 1, 0, 1, 0,
-			1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0,
-		],
-		[
-			0, 0, 0, 0, 0, 1, 1, 1, 0, 1, 1, 1, 1, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0,
-			0, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0,
-		],
-		[
-			0, 0, 0, 0, 0, 1, 1, 1, 0, 1, 1, 1, 0, 1, 0, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1,
-			1, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0,
-		],
-		[
-			0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-			0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-		],
-		[
-			0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-			0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-		],
-		[
-			0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-			0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-		],
-		[
-			0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-			0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-		],
-	];
 	function findValidPositions(map, startX, startY, radius) {
 		const positions_x: number[] = [];
 		const positions_z: number[] = [];
@@ -457,9 +309,13 @@ export function game(pivot: Object3D, camera: PerspectiveCamera) {
 	}
 
 	const validPositions = findValidPositions(
-		mini_map,
-		Number(localStorage.getItem("x")) ? Number(localStorage.getItem("x")) : 10,
-		Number(localStorage.getItem("y")) ? Number(localStorage.getItem("y")) : 6,
+		dungeon.map,
+		Number(localStorage.getItem("x"))
+			? Number(localStorage.getItem("x"))
+			: STARTING_X,
+		Number(localStorage.getItem("y"))
+			? Number(localStorage.getItem("y"))
+			: STARTING_Y,
 		4,
 	);
 
@@ -467,7 +323,7 @@ export function game(pivot: Object3D, camera: PerspectiveCamera) {
 	pivot.add(ambientLight);
 
 	party.light.shadow.mapSize.setScalar(4096);
-    // party.light.castShadow = true
+	// party.light.castShadow = true
 	const raycaster = new Raycaster();
 	const mouse = new Vector2();
 	let coloredCells: ColoredCell[] = [];
@@ -502,18 +358,17 @@ export function game(pivot: Object3D, camera: PerspectiveCamera) {
 					return false;
 				});
 				pivot.remove(intersects[i].object);
-				// renderMap()
+				renderMap();
 			}
 		}
 	}
 
-	let playerPosition = { x: 13, y: 9, rotation: 0 };
 	const gridSize = 9; // This sets the grid size to 9x9
 	const colorIndex = Math.floor(Math.random() * hex_colors.length);
 	let index = 0;
-	for (let i = 0; i < mini_map.length; i++) {
-		for (let j = 0; j < mini_map[i].length; j++) {
-			if (Math.random() < 0.1 && mini_map[i][j] === 1) {
+	for (let i = 0; i < dungeon.map.length; i++) {
+		for (let j = 0; j < dungeon.map[i].length; j++) {
+			if (Math.random() < 0.1 && dungeon.map[i][j] === 1) {
 				// 10% chance to assign a color
 				const colorIndex = Math.floor(Math.random() * hex_colors.length);
 				coloredCells.push({
@@ -536,7 +391,7 @@ export function game(pivot: Object3D, camera: PerspectiveCamera) {
 		const material = new MeshPhongMaterial({
 			color: coloredCells[i].color_loot,
 			emissive: coloredCells[i].color_loot,
-			shininess: 200,
+			shininess: 100,
 		});
 
 		const cube = new Mesh(geometry, material);
@@ -549,14 +404,9 @@ export function game(pivot: Object3D, camera: PerspectiveCamera) {
 
 			// validPositions.splice(randomIndex, 1);
 			const position = coloredCells[i];
-			if (i === 0) {
-				console.log();
-				// alert('cube x '+position.x)
-				// alert('cube y '+position.y)
-			}
 			cube.userData.loot_id = i;
-			cube.position.x = position.y - 3; //13 // // Adjust according to your coordinate system
-			cube.position.z = position.x - 3; // Adjust according to your coordinate system
+			cube.position.x = position.y;
+			cube.position.z = position.x;
 		}
 
 		cube.position.y = 0.31;
@@ -565,7 +415,7 @@ export function game(pivot: Object3D, camera: PerspectiveCamera) {
 		cube.userData.color = coloredCells[i].color;
 
 		const cubeLight = new PointLight(coloredCells[i].color, 0.6, 3);
-        // cubeLight.castShadow = true
+		// cubeLight.castShadow = true
 		cube.add(cubeLight);
 		pivot.add(cube);
 		cubes.push(cube);
@@ -575,53 +425,55 @@ export function game(pivot: Object3D, camera: PerspectiveCamera) {
 		const halfSize = Math.floor(gridSize / 2);
 		const startX = Math.max(
 			0,
-			Math.min(playerPosition.x - halfSize, mini_map[0].length - gridSize),
+			Math.min(playerPosition.x - halfSize, dungeon.map[0].length - gridSize),
 		);
 		const startY = Math.max(
 			0,
-			Math.min(playerPosition.y - halfSize, mini_map.length - gridSize),
+			Math.min(playerPosition.y - halfSize, dungeon.map.length - gridSize),
 		);
 		return { startX, startY };
 	}
 
 	function renderMap() {
-	    if(document.getElementById('mini-map')) {
-	        document.getElementById('mini-map')!.remove()
-	    }
-	    const { startX, startY } = calculateBounds();
-	    const miniMap = document.createElement('div');
-	    miniMap.id = 'mini-map';
-	    miniMap.className = 'mini-map';
-	    for (let i = startY; i < startY + gridSize; i++) {
-	        const rowDiv = document.createElement('div');
-	        rowDiv.className = 'row';
-	        for (let j = startX; j < startX + gridSize; j++) {
-	            const cell = mini_map[i][j];
-	            const cellDiv = document.createElement('div');
-	            cellDiv.className = 'cell';
-	            if (cell === 1) cellDiv.classList.add('obstacle');
+		if (document.getElementById("mini-map")) {
+			document.getElementById("mini-map")?.remove();
+		}
+		const { startX, startY } = calculateBounds();
+		const miniMap = document.createElement("div");
+		miniMap.id = "mini-map";
+		miniMap.className = "mini-map";
+		for (let i = startY; i < startY + gridSize; i++) {
+			const rowDiv = document.createElement("div");
+			rowDiv.className = "row";
+			for (let j = startX; j < startX + gridSize; j++) {
+				const cell = dungeon.map[i][j];
+				const cellDiv = document.createElement("div");
+				cellDiv.className = "cell";
+				if (cell === 1) cellDiv.classList.add("obstacle");
 
-	            if (i === playerPosition.y && j === playerPosition.x) {
-	                const playerMarker = document.createElement('div');
-	                playerMarker.className = 'player-marker';
-	                playerMarker.style.transform = `translate(-50%, -50%) rotate(${playerPosition.rotation}deg)`;
-	                cellDiv.appendChild(playerMarker);
-	            }
-	            console.log('count:' + coloredCells.length)
-	            const coloredCell = coloredCells.find(loot => loot.x === i && loot.y === j);
-	            if (coloredCell) {
-	                const colorDiv = document.createElement('div');
-	                colorDiv.className = 'color-marker';
-	                colorDiv.style.backgroundColor = coloredCell.color;
-	                cellDiv.appendChild(colorDiv);
-	            }
-	            rowDiv.appendChild(cellDiv);
-	        }
-	        miniMap.appendChild(rowDiv);
-	    }
+				if (i === playerPosition.y && j === playerPosition.x) {
+					const playerMarker = document.createElement("div");
+					playerMarker.className = "player-marker";
+					playerMarker.style.transform = `translate(-50%, -50%) rotate(${playerPosition.rotation}deg)`;
+					cellDiv.appendChild(playerMarker);
+				}
+				console.log(`count:${coloredCells.length}`);
+				const coloredCell = coloredCells.find(
+					(loot) => loot.x === i && loot.y === j,
+				);
+				if (coloredCell) {
+					const colorDiv = document.createElement("div");
+					colorDiv.className = "color-marker";
+					colorDiv.style.backgroundColor = coloredCell.color;
+					cellDiv.appendChild(colorDiv);
+				}
+				rowDiv.appendChild(cellDiv);
+			}
+			miniMap.appendChild(rowDiv);
+		}
 
-	    gameContainer.innerHTML = '';
-	    gameContainer.appendChild(miniMap);
+		gameContainer.innerHTML = "";
+		gameContainer.appendChild(miniMap);
 	}
 	renderMap();
 

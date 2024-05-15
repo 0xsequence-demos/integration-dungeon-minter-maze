@@ -1,4 +1,4 @@
-import { NearestFilter, SphereGeometry, TextureLoader } from "three";
+import { SphereGeometry, TextureLoader } from "three";
 import { ObjectLoader } from "three";
 import { PointLight } from "three";
 import {
@@ -11,7 +11,7 @@ import {
 	Raycaster,
 	Vector2,
 } from "three";
-import { Tween, update } from "three/examples/jsm/libs/tween.module.js";
+import { update } from "three/examples/jsm/libs/tween.module.js";
 import { Dungeon } from "./Dungeon";
 import type { Party } from "./Party";
 
@@ -25,6 +25,8 @@ type ColoredCell = {
 
 export function game(pivot: Object3D, camera: PerspectiveCamera) {
 	const cubes: Mesh[] = [];
+
+	const gameContainer = document.getElementById("gameContainer")!;
 
 	function handleKeyPress(event) {
 		let newX = playerPosition.x;
@@ -93,10 +95,10 @@ export function game(pivot: Object3D, camera: PerspectiveCamera) {
 		}
 		if (newX >= 0 && newY >= 0 && mini_map[newY][newX] === 1) {
 			playerPosition = { x: newX, y: newY, rotation };
-			// renderMap();
+			renderMap();
 		} else {
 			playerPosition.rotation = rotation;
-			// renderMap();
+			renderMap();
 		}
 	}
 
@@ -158,6 +160,7 @@ export function game(pivot: Object3D, camera: PerspectiveCamera) {
 	buttonsContainer.style.gap = "5px";
 	buttonsContainer.style.width = "150px"; // Set a fixed width for the container
 	buttonsContainer.style.height = "100px"; // Set a fixed height for the container
+
 
 	// Create and append buttons
 	for (const label of buttonLabels) {
@@ -463,9 +466,8 @@ export function game(pivot: Object3D, camera: PerspectiveCamera) {
 	const ambientLight = new AmbientLight(0x08131c);
 	pivot.add(ambientLight);
 
-	party.light.castShadow = true;
 	party.light.shadow.mapSize.setScalar(4096);
-
+    // party.light.castShadow = true
 	const raycaster = new Raycaster();
 	const mouse = new Vector2();
 	let coloredCells: ColoredCell[] = [];
@@ -505,7 +507,6 @@ export function game(pivot: Object3D, camera: PerspectiveCamera) {
 		}
 	}
 
-	const gameContainer = document.getElementById("gameContainer");
 	let playerPosition = { x: 13, y: 9, rotation: 0 };
 	const gridSize = 9; // This sets the grid size to 9x9
 	const colorIndex = Math.floor(Math.random() * hex_colors.length);
@@ -539,7 +540,7 @@ export function game(pivot: Object3D, camera: PerspectiveCamera) {
 		});
 
 		const cube = new Mesh(geometry, material);
-		cube.castShadow = true;
+		// cube.castShadow = true;
 
 		// Select a random valid position
 		if (coloredCells.length > 0) {
@@ -564,6 +565,7 @@ export function game(pivot: Object3D, camera: PerspectiveCamera) {
 		cube.userData.color = coloredCells[i].color;
 
 		const cubeLight = new PointLight(coloredCells[i].color, 0.6, 3);
+        // cubeLight.castShadow = true
 		cube.add(cubeLight);
 		pivot.add(cube);
 		cubes.push(cube);
@@ -582,46 +584,46 @@ export function game(pivot: Object3D, camera: PerspectiveCamera) {
 		return { startX, startY };
 	}
 
-	// function renderMap() {
-	//     if(document.getElementById('mini-map')) {
-	//         document.getElementById('mini-map')!.remove()
-	//     }
-	//     const { startX, startY } = calculateBounds();
-	//     const miniMap = document.createElement('div');
-	//     miniMap.id = 'mini-map';
-	//     miniMap.className = 'mini-map';
-	//     for (let i = startY; i < startY + gridSize; i++) {
-	//         const rowDiv = document.createElement('div');
-	//         rowDiv.className = 'row';
-	//         for (let j = startX; j < startX + gridSize; j++) {
-	//             const cell = mini_map[i][j];
-	//             const cellDiv = document.createElement('div');
-	//             cellDiv.className = 'cell';
-	//             if (cell === 1) cellDiv.classList.add('obstacle');
+	function renderMap() {
+	    if(document.getElementById('mini-map')) {
+	        document.getElementById('mini-map')!.remove()
+	    }
+	    const { startX, startY } = calculateBounds();
+	    const miniMap = document.createElement('div');
+	    miniMap.id = 'mini-map';
+	    miniMap.className = 'mini-map';
+	    for (let i = startY; i < startY + gridSize; i++) {
+	        const rowDiv = document.createElement('div');
+	        rowDiv.className = 'row';
+	        for (let j = startX; j < startX + gridSize; j++) {
+	            const cell = mini_map[i][j];
+	            const cellDiv = document.createElement('div');
+	            cellDiv.className = 'cell';
+	            if (cell === 1) cellDiv.classList.add('obstacle');
 
-	//             if (i === playerPosition.y && j === playerPosition.x) {
-	//                 const playerMarker = document.createElement('div');
-	//                 playerMarker.className = 'player-marker';
-	//                 playerMarker.style.transform = `translate(-50%, -50%) rotate(${playerPosition.rotation}deg)`;
-	//                 cellDiv.appendChild(playerMarker);
-	//             }
-	//             console.log('count:' + coloredCells.length)
-	//             const coloredCell = coloredCells.find(loot => loot.x === i && loot.y === j);
-	//             if (coloredCell) {
-	//                 const colorDiv = document.createElement('div');
-	//                 colorDiv.className = 'color-marker';
-	//                 colorDiv.style.backgroundColor = coloredCell.color;
-	//                 cellDiv.appendChild(colorDiv);
-	//             }
-	//             rowDiv.appendChild(cellDiv);
-	//         }
-	//         miniMap.appendChild(rowDiv);
-	//     }
+	            if (i === playerPosition.y && j === playerPosition.x) {
+	                const playerMarker = document.createElement('div');
+	                playerMarker.className = 'player-marker';
+	                playerMarker.style.transform = `translate(-50%, -50%) rotate(${playerPosition.rotation}deg)`;
+	                cellDiv.appendChild(playerMarker);
+	            }
+	            console.log('count:' + coloredCells.length)
+	            const coloredCell = coloredCells.find(loot => loot.x === i && loot.y === j);
+	            if (coloredCell) {
+	                const colorDiv = document.createElement('div');
+	                colorDiv.className = 'color-marker';
+	                colorDiv.style.backgroundColor = coloredCell.color;
+	                cellDiv.appendChild(colorDiv);
+	            }
+	            rowDiv.appendChild(cellDiv);
+	        }
+	        miniMap.appendChild(rowDiv);
+	    }
 
-	//     gameContainer.innerHTML = '';
-	//     gameContainer.appendChild(miniMap);
-	// }
-	// renderMap();
+	    gameContainer.innerHTML = '';
+	    gameContainer.appendChild(miniMap);
+	}
+	renderMap();
 
 	// Add event listener for mouse click
 	document
@@ -652,9 +654,6 @@ export function game(pivot: Object3D, camera: PerspectiveCamera) {
 		[27, 4],
 	];
 
-	const modelLoader = new ObjectLoader();
-	const textureLoader = new TextureLoader();
-
 	const bulbGeo = new SphereGeometry(0.05, 32, 16);
 	const bulbMaterial = new MeshPhongMaterial({
 		color: 0xffffcc,
@@ -665,9 +664,8 @@ export function game(pivot: Object3D, camera: PerspectiveCamera) {
 		bulb.position.x = lightCoords[i][0];
 		bulb.position.z = lightCoords[i][1];
 		bulb.position.y = 0.871;
-		// bulb.castShadow = true;
 		const bulbLight = new PointLight(0xfff0dd, 0.8, 4);
-		//bulbLight.castShadow = true;
+		// bulbLight.castShadow = true;
 		bulbLight.shadow.mapSize.setScalar(512);
 		bulbLight.shadow.camera.near = 0.075;
 		bulbLight.shadow.camera.far = 0.13;

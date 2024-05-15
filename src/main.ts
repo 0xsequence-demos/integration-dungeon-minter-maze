@@ -1,4 +1,4 @@
-import { DirectionalLight, Mesh, WebGLRenderer } from "three";
+import { PCFSoftShadowMap, WebGLRenderer } from "three";
 import { PerspectiveCamera } from "three";
 import { Scene } from "three";
 import { Object3D } from "three";
@@ -23,19 +23,8 @@ camera.position.set(0, 0, 5);
 
 // camera.position.set(Number(c[0]), Number(c[1]) + 1, Number(c[2]))
 const renderer = new WebGLRenderer();
-
-// renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-// renderer.shadowMap.enabled = true;
-// renderer.shadowMapSoft = true;
-
-// renderer.shadowCameraNear = 3;
-// renderer.shadowCameraFar = 1000;
-// renderer.shadowCameraFov = 50;
-
-// renderer.shadowMapBias = 0.0039;
-// renderer.shadowMapDarkness = 0.5;
-// renderer.shadowMapWidth = 4096;
-// renderer.shadowMapHeight = 4096;
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = PCFSoftShadowMap;
 
 renderer.autoClear = true;
 renderer.setSize(window.innerWidth, window.innerHeight);

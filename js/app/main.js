@@ -2,7 +2,7 @@ let cubes = []
 require(['lib/three', 'lib/tween', 'dungeon', 'relativeDir', 'constants'], function(THREE, TWEEN, Dungeon, RelativeDir, Const) {
     var scene = new THREE.Scene();
     var renderer = new THREE.WebGLRenderer();
-    var keypressSpeedThrottle = 300
+    var keypressSpeedThrottle = 400
     function throttle(func, limit) {
         let lastFunc;
         let lastRan;
@@ -381,8 +381,8 @@ require(['lib/three', 'lib/tween', 'dungeon', 'relativeDir', 'constants'], funct
         for (let i = 0; i < intersects.length; i++) {
             if(intersects[i].object.name.slice(0,4) == 'loot' && intersects[i].distance < 1){
 
-                window.parent.postMessage({portal: 'loot', color: intersects[i].object.color}, 'https://dungeon-minter.vercel.app/');
-                // window.parent.postMessage({portal: 'loot', color: intersects[i].object.color}, 'http://localhost:5173/');
+                // window.parent.postMessage({portal: 'loot', color: intersects[i].object.color}, 'https://dungeon-minter.vercel.app/');
+                window.parent.postMessage({portal: 'loot', color: intersects[i].object.color}, 'http://localhost:5173/');
 
                 coloredCells = coloredCells.filter(cell => {
                     if(String(cell.id) != String(intersects[i].object.loot_id)){

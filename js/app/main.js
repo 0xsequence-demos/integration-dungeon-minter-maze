@@ -381,8 +381,8 @@ require(['lib/three', 'lib/tween', 'dungeon', 'relativeDir', 'constants'], funct
         for (let i = 0; i < intersects.length; i++) {
             if(intersects[i].object.name.slice(0,4) == 'loot' && intersects[i].distance < 1){
 
-                // window.parent.postMessage({portal: 'loot', color: intersects[i].object.color}, 'https://dungeon-minter.vercel.app/');
-                window.parent.postMessage({portal: 'loot', color: intersects[i].object.color}, 'http://localhost:5173/');
+                window.parent.postMessage({portal: 'loot', color: intersects[i].object.color}, 'https://dungeon-minter.vercel.app/');
+                // window.parent.postMessage({portal: 'loot', color: intersects[i].object.color}, 'http://localhost:5173/');
 
                 coloredCells = coloredCells.filter(cell => {
                     if(String(cell.id) != String(intersects[i].object.loot_id)){

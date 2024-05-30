@@ -1,9 +1,17 @@
-export const STARTING_X = 13;
-export const STARTING_Y = 9;
+import type { PartyAction } from "./PartyAction";
+import { Direction } from "./directionUtils";
+
+export const STARTING_X = 23;
+export const STARTING_Y = 8;
+export const STARTING_DIRECTION = Direction.NORTH;
 
 export const FOV = 110;
 
 export const CAMERA_HEIGHT = 0.3;
+
+export const HEAD_TILT_ANGLE = -0.35;
+
+export const DRAMATIC_LOOT_APPROACH_SPEED = 0.3;
 
 export const PARTY = {
   MOVE_TIME: 300,
@@ -11,27 +19,24 @@ export const PARTY = {
   ROTATE_TIME: 200,
 
   LIGHT: {
-    COLOR: 0xffee99,
-    INTENSITY: 0.8,
-    RADIUS: 4.5,
+    COLOR: 0xffeeaa,
+    INTENSITY: 0.6,
+    RADIUS: 3.5,
     OFFSET: { x: 0.2, y: 0.2, z: 0.1 },
   },
 };
 
-export const KEYBINDINGS = {
-  move_forward: [87], // W
-  move_left: [65], // A
-  move_backward: [83], // S
-  move_right: [68], // D
+export const KEYBINDINGS = new Map<number, PartyAction>();
+KEYBINDINGS.set(87, "moveForward");
+KEYBINDINGS.set(38, "moveForward");
+KEYBINDINGS.set(65, "strafeLeft");
+KEYBINDINGS.set(37, "strafeLeft");
+KEYBINDINGS.set(83, "moveBackward");
+KEYBINDINGS.set(40, "moveBackward");
+KEYBINDINGS.set(68, "strafeRight");
+KEYBINDINGS.set(39, "strafeRight");
 
-  rotate_left: [81], // Q
-  rotate_right: [69], // E
-
-  move_forward_arrows: [38], // up
-  move_left_arrows: [37], // left
-  move_backward_arrows: [40], // down
-  move_right_arrows: [39], //
-
-  rotate_left_arrows: [33], // Q
-  rotate_right_arrows: [34], // E
-};
+KEYBINDINGS.set(81, "turnLeft");
+KEYBINDINGS.set(33, "turnLeft");
+KEYBINDINGS.set(69, "turnRight");
+KEYBINDINGS.set(34, "turnRight");

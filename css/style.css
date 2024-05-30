@@ -84,7 +84,7 @@ body {
   transform: translate(-50%, -50%);
 }
 
-.player-marker {
+.party-marker {
   width: 5px;
   height: 5px;
   position: absolute;

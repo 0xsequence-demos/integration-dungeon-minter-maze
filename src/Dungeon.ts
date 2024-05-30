@@ -4,7 +4,6 @@ import {
   MeshPhongMaterial,
   NearestFilter,
   type Object3D,
-  type PerspectiveCamera,
   PlaneGeometry,
   PointLight,
   RepeatWrapping,
@@ -12,31 +11,16 @@ import {
   type Texture,
   TextureLoader,
 } from "three";
-import { MapTiles } from "./MapTiles";
-import { Party } from "./Party";
-import { STARTING_X, STARTING_Y } from "./constants";
+import { type MapData, MapTiles } from "./MapTypes";
 import { createErrorXGeometry } from "./createErrorXGeometry";
-import { Direction } from "./directionUtils";
 import { getTempTexture } from "./getTempTexture";
-import { loadMapDataFromImage } from "./loadMapDataFromImage";
 
 export class Dungeon {
-  spawn_loc = { x: STARTING_X, y: STARTING_Y };
-
-  // spawn_loc = {x: Number(localStorage.getItem('x')), y: Number(localStorage.getItem('y'))};
-  spawn_dir = Direction.NORTH;
-  map: MapTiles[][];
   constructor(
     private pivot: Object3D,
-    private camera: PerspectiveCamera,
+    map: MapData,
   ) {
-    //
-  }
-
-  async loadMap(imagePath: string) {
-    this.map = await loadMapDataFromImage(imagePath);
     const texLoader = new TextureLoader();
-    const map = this.map;
 
     // texLoader.load('./js/app/portal-3.gif', function (texture) {
 
@@ -134,32 +118,5 @@ export class Dungeon {
         }
       }
     }
-  }
-  partyCollidesWith(x: number, y: number) {
-    if (y >= 0 && y < this.map.length) {
-      const row = this.map[y];
-      if (x >= 0 && x < row.length) {
-        return row[x] === MapTiles.wall;
-      }
-    }
-    return false;
-  }
-
-  spawnParty(x: number, y: number, spawn_dir: Direction) {
-    if (x) {
-      console.log("spawning");
-      return new Party(this.pivot, this.camera, x, y, spawn_dir, (x, y) =>
-        this.partyCollidesWith(x, y),
-      );
-    }
-    console.log("default");
-    return new Party(
-      this.pivot,
-      this.camera,
-      this.spawn_loc.x,
-      this.spawn_loc.y,
-      this.spawn_dir,
-      (x, y) => this.partyCollidesWith(x, y),
-    );
   }
 }

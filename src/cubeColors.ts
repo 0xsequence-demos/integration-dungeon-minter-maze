@@ -1,11 +1,12 @@
-export type ColoredCell = {
+export type ChestData = {
   x: number;
   y: number;
+  direction: number;
   color: string;
-  color_loot: number;
+  colorLoot: number;
   id: number;
 };
-export const hex_colors = [
+export const colorsHex = [
   "#ffb23e", //orange
   "#DCD31D", //yellow
   "#6fcadc", // blue

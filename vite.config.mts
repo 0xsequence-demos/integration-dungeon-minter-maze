@@ -1,4 +1,4 @@
-import { defineConfig, PluginOption } from 'vite'
+import { defineConfig, type PluginOption } from 'vite'
 import { viteStaticCopy } from 'vite-plugin-static-copy'
 
 export default defineConfig({

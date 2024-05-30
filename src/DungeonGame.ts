@@ -1,26 +1,30 @@
-import { SphereGeometry } from "three";
-import { PointLight } from "three";
 import {
   AmbientLight,
-  BoxGeometry,
   Mesh,
   MeshPhongMaterial,
   type Object3D,
   type PerspectiveCamera,
+  PointLight,
   Raycaster,
   Vector2,
 } from "three";
-import { update } from "three/examples/jsm/libs/tween.module.js";
+import { Easing, Tween, update } from "three/examples/jsm/libs/tween.module.js";
 import { Dungeon } from "./Dungeon";
-import { MapTiles } from "./MapTiles";
-import type { Party } from "./Party";
-import { STARTING_X, STARTING_Y } from "./constants";
-import { type ColoredCell, colors, hex_colors } from "./cubeColors";
-import { Direction, asDegrees } from "./directionUtils";
+import type { InteractiveChest } from "./InteractiveChest";
+import type { MapData, MapTiles } from "./MapTypes";
+import { MiniMap } from "./MiniMap";
+import { PartyController } from "./PartyController";
+import { PartyState } from "./PartyState";
+import { STARTING_DIRECTION, STARTING_X, STARTING_Y } from "./constants";
+import type { ChestData } from "./cubeColors";
+import { generateChestDatas } from "./generateChestDatas";
+import { isFacingLoot } from "./isFacingLoot";
+import { loadMapDataFromImage } from "./loadMapDataFromImage";
+import { makeChestVisuals } from "./makeChestVisuals";
 
 // Array of button labels
 const buttonLabels = ["Q", "W", "E", "A", "S", "D"];
-const keyMap = {
+const buttonKeyMap = {
   Q: 81,
   W: 87,
   E: 69,
@@ -29,18 +33,27 @@ const keyMap = {
   D: 68,
 };
 
-const url = new URL(window.location.href);
-const params = new URLSearchParams(url.search);
-
-const refresh = params.get("refresh");
-
-const gridSize = 9; // This sets the grid size to 9x9
-
 export class DungeonGame {
-  party: Party;
+  map: MapData;
+  party: PartyController;
   dungeon: Dungeon;
   buttonsContainer: HTMLDivElement;
   navButtons = new Map<string, HTMLElement>();
+  partyState: PartyState;
+  minimap: MiniMap;
+  private _activeChest: InteractiveChest | undefined;
+  public get activeChest(): InteractiveChest | undefined {
+    return this._activeChest;
+  }
+  public set activeChest(value: InteractiveChest | undefined) {
+    if (this._activeChest) {
+      this._activeChest.deactivate();
+    }
+    this._activeChest = value;
+    if (this._activeChest) {
+      this._activeChest.activate();
+    }
+  }
 
   constructor(
     private pivot: Object3D,
@@ -52,24 +65,35 @@ export class DungeonGame {
       throw new Error("Could not find dev named gameContainer");
     }
     this.gameContainer = gameContainer;
-    this.dungeon = new Dungeon(pivot, camera);
-    this.dungeon.loadMap("assets/textures/mini_map.png").then(this.init);
+    loadMapDataFromImage("assets/textures/mini_map.png").then((map) => {
+      this.map = map;
+      this.init();
+    });
   }
-  private init = () => {
-    if (refresh === "true") {
-      this.party = this.dungeon.spawnParty(
-        Number(localStorage.getItem("x")),
-        Number(localStorage.getItem("y")),
-        Number(localStorage.getItem("direction-1")),
-      );
-    } else {
-      this.party = this.dungeon.spawnParty(
-        STARTING_X,
-        STARTING_Y,
-        Direction.NORTH,
-      );
-    }
-    this.party.positionListeners.push(this.renderMap);
+  private async init() {
+    this.dungeon = new Dungeon(this.pivot, this.map);
+    const partyState = new PartyState(
+      STARTING_X,
+      STARTING_Y,
+      STARTING_DIRECTION,
+    );
+    this.party = new PartyController(
+      this.pivot,
+      this.camera,
+      partyState,
+      this.map,
+      this.chestDatas,
+    );
+
+    this.minimap = new MiniMap(
+      this.map,
+      partyState,
+      this.chestDatas,
+      this.gameContainer,
+    );
+
+    this.party.listenForLocationChanges(() => this.minimap.render());
+    this.partyState = partyState;
 
     // Create a container for the buttons
     const buttonsContainer = document.createElement("div");
@@ -100,70 +124,50 @@ export class DungeonGame {
 
       buttonsContainer.appendChild(button);
     }
-    let index = 0;
-    const map = this.dungeon.map;
-    for (let i = 0; i < map.length; i++) {
-      for (let j = 0; j < map[i].length; j++) {
-        if (Math.random() < 0.1 && map[i][j] !== MapTiles.wall) {
-          // 10% chance to assign a color
-          const colorIndex = Math.floor(Math.random() * hex_colors.length);
-          this.coloredCells.push({
-            x: i,
-            y: j,
-            color: hex_colors[colorIndex],
-            color_loot: colors[colorIndex],
-            id: index,
-          });
-          index++;
-          if (this.coloredCells.length === 10) break;
+
+    generateChestDatas(this.map, this.chestDatas);
+
+    makeChestVisuals(this.chestDatas, this.pivot, this.chests, this.camera);
+
+    this.party.listenForLocationChanges(() => {
+      const chestData = isFacingLoot(
+        partyState.x,
+        partyState.y,
+        partyState.direction,
+        this.map,
+        this.chestDatas,
+      );
+      this.activeChest = this.chests.find((c) => c.chestData === chestData);
+    });
+
+    if (import.meta.hot) {
+      import.meta.hot.accept("./makeChestVisuals", (mod) => {
+        for (const chest of this.chests) {
+          this.pivot.remove(chest.visuals);
         }
-      }
-      if (this.coloredCells.length === 10) break;
-    }
-
-    const geometry = new BoxGeometry(0.3, 0.3, 0.3);
-
-    for (let i = 0; i < this.coloredCells.length; i++) {
-      const material = new MeshPhongMaterial({
-        color: this.coloredCells[i].color_loot,
-        emissive: this.coloredCells[i].color_loot,
-        shininess: 100,
+        this.chests.length = 0;
+        const currentActiveChestData = this.activeChest?.chestData;
+        mod.makeChestVisuals(
+          this.chestDatas,
+          this.pivot,
+          this.chests,
+          this.camera,
+        );
+        if (currentActiveChestData) {
+          this.activeChest = this.chests.find(
+            (c) => c.chestData === currentActiveChestData,
+          );
+        }
       });
-
-      const cube = new Mesh(geometry, material);
-      // cube.castShadow = true;
-
-      // Select a random valid position
-      if (this.coloredCells.length > 0) {
-        // let randomIndex = Math.floor(Math.random() * validPositions.length);
-        // let position = validPositions[randomIndex];
-
-        // validPositions.splice(randomIndex, 1);
-        const position = this.coloredCells[i];
-        cube.userData.loot_id = i;
-        cube.position.x = position.y;
-        cube.position.z = position.x;
-      }
-
-      cube.position.y = 0.31;
-      cube.userData.id = i;
-      cube.name = "loot"; //portal
-      cube.userData.color = this.coloredCells[i].color;
-
-      const cubeLight = new PointLight(this.coloredCells[i].color, 0.6, 3);
-      // cubeLight.castShadow = true
-      cube.add(cubeLight);
-      this.pivot.add(cube);
-      this.cubes.push(cube);
     }
 
-    this.renderMap();
+    this.minimap.render();
 
     // Add event listener for mouse click
     window.addEventListener("click", this.onMouseClick, false);
 
-    document.addEventListener("keydown", this.onNavKeyDown);
-    document.addEventListener("keyup", this.onNavKeyUp);
+    document.addEventListener("keydown", this.onKeyDown);
+    document.addEventListener("keyup", this.onKeyUp);
 
     // Append the container to the body
     document.body.appendChild(buttonsContainer);
@@ -171,84 +175,22 @@ export class DungeonGame {
     const ambientLight = new AmbientLight(0x08131c);
     this.pivot.add(ambientLight);
 
-    this.party.light.shadow.mapSize.setScalar(1024);
+    // this.party.light.shadow.mapSize.setScalar(1024);
     // party.light.castShadow = true
-  };
-
-  cubes: Mesh[] = [];
-  raycaster = new Raycaster();
-  mouse = new Vector2();
-  coloredCells: ColoredCell[] = [];
-
-  gameContainer: HTMLElement;
-
-  calculateBounds() {
-    const halfSize = Math.floor(gridSize / 2);
-    const startX = Math.max(
-      0,
-      Math.min(
-        this.party.position.x - halfSize,
-        this.dungeon.map[0].length - gridSize,
-      ),
-    );
-    const startY = Math.max(
-      0,
-      Math.min(
-        this.party.position.y - halfSize,
-        this.dungeon.map.length - gridSize,
-      ),
-    );
-    return { startX, startY };
   }
 
-  renderMap = () => {
-    if (document.getElementById("mini-map")) {
-      document.getElementById("mini-map")?.remove();
-    }
-    const { startX, startY } = this.calculateBounds();
-    const miniMap = document.createElement("div");
-    miniMap.id = "mini-map";
-    miniMap.className = "mini-map";
-    for (let i = startY; i < startY + gridSize; i++) {
-      const rowDiv = document.createElement("div");
-      rowDiv.className = "row";
-      for (let j = startX; j < startX + gridSize; j++) {
-        const cell = this.dungeon.map[i][j];
-        const cellDiv = document.createElement("div");
-        cellDiv.className = "cell";
-        if (cell === MapTiles.wall) cellDiv.classList.add("obstacle");
+  chests: InteractiveChest[] = [];
+  raycaster = new Raycaster();
+  mouse = new Vector2();
+  chestDatas: ChestData[] = [];
 
-        if (i === this.party.position.y && j === this.party.position.x) {
-          const playerMarker = document.createElement("div");
-          playerMarker.className = "player-marker";
-          playerMarker.style.transform = `translate(-50%, -50%) rotate(${asDegrees(
-            this.party.direction,
-          )}deg)`;
-          cellDiv.appendChild(playerMarker);
-        }
-        const coloredCell = this.coloredCells.find(
-          (loot) => loot.x === i && loot.y === j,
-        );
-        if (coloredCell) {
-          const colorDiv = document.createElement("div");
-          colorDiv.className = "color-marker";
-          colorDiv.style.backgroundColor = coloredCell.color;
-          cellDiv.appendChild(colorDiv);
-        }
-        rowDiv.appendChild(cellDiv);
-      }
-      miniMap.appendChild(rowDiv);
-    }
-
-    this.gameContainer.innerHTML = "";
-    this.gameContainer.appendChild(miniMap);
-  };
+  gameContainer: HTMLElement;
 
   onClickNavigationButton = (event) => {
     const keyLabel = event.target.textContent;
 
-    if (keyLabel in keyMap) {
-      const key_code = keyMap[keyLabel];
+    if (keyLabel in buttonKeyMap) {
+      const key_code = buttonKeyMap[keyLabel];
       if (this.party) {
         this.party.handleKey(key_code);
       }
@@ -264,44 +206,7 @@ export class DungeonGame {
     }
   };
 
-  findValidPositions(startX: number, startY: number, radius: number) {
-    const map = this.dungeon.map;
-    const positions_x: number[] = [];
-    const positions_z: number[] = [];
-    const validPositions: { x: number; z: number }[] = [];
-    const minX = Math.max(startX - radius, 0);
-    const maxX = Math.min(startX + radius, map[0].length - 1);
-    const minZ = Math.max(startY - radius, 0);
-    const maxZ = Math.min(startY + radius, map.length - 1);
-
-    for (let z = 0; z < map.length; z++) {
-      for (let x = 0; x < map[z].length; x++) {
-        if (map[z][x] !== MapTiles.wall) {
-          // Check if within the computed ranges
-          if (x >= minX && x <= maxX && z >= minZ && z <= maxZ) {
-            // Add to positions if within the radius for x or z
-            positions_x.push(x);
-            positions_z.push(z);
-          }
-        }
-      }
-    }
-
-    for (let z = 0; z < map.length; z++) {
-      for (let x = 0; x < map[z].length; x++) {
-        if (map[z][x] === 1) {
-          // Check if within the computed ranges
-          if (!positions_x.includes(x) && !positions_z.includes(z)) {
-            // Add to positions if within the radius for x or z
-            validPositions.push({ x, z });
-          }
-        }
-      }
-    }
-    return validPositions;
-  }
-
-  onNavKeyDown = (e: KeyboardEvent) => {
+  onKeyDown = (e: KeyboardEvent) => {
     const key = e.keyCode ? e.keyCode : e.which;
     if (this.party) {
       this.party.handleKey(key);
@@ -312,7 +217,7 @@ export class DungeonGame {
       button.style.background = "grey";
     }
   };
-  onNavKeyUp = (e: KeyboardEvent) => {
+  onKeyUp = (e: KeyboardEvent) => {
     const key = e.keyCode ? e.keyCode : e.which;
     const keyChar = String.fromCharCode(key);
     const button = this.navButtons.get(keyChar);
@@ -332,49 +237,59 @@ export class DungeonGame {
     // Calculate objects intersecting the picking ray
     const intersects = this.raycaster.intersectObjects(this.pivot.children);
 
-    for (let i = 0; i < intersects.length; i++) {
-      if (
-        intersects[i].object.name.slice(0, 4) === "loot" &&
-        intersects[i].distance < 1
-      ) {
-        window.parent.postMessage(
-          { portal: "loot", color: intersects[i].object.userData.color },
-          "https://dungeon-minter.vercel.app/",
-        );
+    // for (let i = 0; i < intersects.length; i++) {
+    //   if (
+    //     intersects[i].object.name.slice(0, 4) === "loot" &&
+    //     intersects[i].distance < 1
+    //   ) {
+    //     window.parent.postMessage(
+    //       { portal: "loot", color: intersects[i].object.userData.color },
+    //       "https://dungeon-minter.vercel.app/",
+    //     );
 
-        this.coloredCells = this.coloredCells.filter((cell) => {
-          if (
-            String(cell.id) !== String(intersects[i].object.userData.loot_id)
-          ) {
-            return true;
-          }
-          return false;
-        });
-        this.pivot.remove(intersects[i].object);
-        this.renderMap();
-      }
-    }
+    //     this.chestDatas = this.chestDatas.filter((cell) => {
+    //       if (
+    //         String(cell.id) !== String(intersects[i].object.userData.loot_id)
+    //       ) {
+    //         return true;
+    //       }
+    //       return false;
+    //     });
+    //     // this.pivot.remove(intersects[i].object);
+    //     intersects[i].object.traverse((n) => {
+    //       if (n.parent && n instanceof PointLight) {
+    //         n.parent.remove(n);
+    //       }
+    //       if (
+    //         n.name === "glow" &&
+    //         n instanceof Mesh &&
+    //         n.material instanceof MeshPhongMaterial
+    //       ) {
+    //         n.material.emissive.multiplyScalar(0.02);
+    //       } else if (n.name === "lid") {
+    //         new Tween(n.rotation)
+    //           .to({ x: -1 }, 1000)
+    //           .easing(Easing.Sinusoidal.InOut)
+    //           .start();
+    //       }
+    //     });
+    //     this.minimap.render();
+    //   }
+    // }
   };
 
   time = 0;
   simulate = (dt: number) => {
     update(); //TWEENER
     this.time += dt;
-
-    for (const cube of this.cubes) {
-      cube.rotation.x += 0.02;
-      cube.rotation.y += 0.0187;
-      // cubeLight.intensity = 0.1 * Math.sin(time * 0.002) + 0.6;
-      cube.position.y = 0.1 * Math.sin(this.time * 0.001) + 0.41;
-    }
     if (this.party) {
       this.party.tick();
     }
   };
   cleanup = () => {
     window.removeEventListener("click", this.onMouseClick);
-    document.removeEventListener("keydown", this.onNavKeyDown);
-    document.removeEventListener("keyup", this.onNavKeyUp);
+    document.removeEventListener("keydown", this.onKeyDown);
+    document.removeEventListener("keyup", this.onKeyUp);
     document.body.removeChild(this.buttonsContainer);
   };
 }

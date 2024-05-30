@@ -1,4 +1,4 @@
-import { MapTiles } from "./MapTiles";
+import { type MapData, MapTiles } from "./MapTypes";
 
 const tileByColor = new Map<bigint, MapTiles>();
 tileByColor.set(0x000000n, MapTiles.wall);
@@ -6,8 +6,8 @@ tileByColor.set(0xffffffn, MapTiles.floor);
 tileByColor.set(0xffff00n, MapTiles.light);
 
 export function loadMapDataFromImage(imagePath: string) {
-  return new Promise<MapTiles[][]>((resolve) => {
-    const mini_map: MapTiles[][] = [];
+  return new Promise<MapData>((resolve) => {
+    const mini_map: MapData = [];
     // 2b) Load an image from which to get data
     const img = new Image();
     img.onload = () => {

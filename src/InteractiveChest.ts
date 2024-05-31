@@ -12,9 +12,9 @@ import {
   Vector2,
 } from "three";
 import { lerp } from "three/src/math/MathUtils.js";
-import { getRandom } from "./arrayUtils";
 import { clamp } from "./clamp";
 import { clamp01 } from "./clamp01";
+import { dappURL } from "./constants";
 import { type ChestData, colors, colorsHex } from "./cubeColors";
 import { getRandomIntInRange } from "./getRandomIntInRange";
 import { getProtoMesh } from "./gltfUtils";
@@ -277,13 +277,9 @@ export class InteractiveChest {
       }
     }
     window.parent.postMessage(
-      { portal: "loot", color: hex },
-      "http://localhost:5173",
+      { portal: "loot", color: this.chestData.colorLoot },
+      dappURL,
     );
-    //     window.parent.postMessage(
-    //       { portal: "loot", color: this.chestData.colorLoot },
-    // "https://dungeon-minter.vercel.app/",
-    // );
   }
 
   deactivate() {
@@ -305,6 +301,6 @@ export class InteractiveChest {
     document.removeEventListener("mousemove", this.onMouseMove);
     document.removeEventListener("mouseup", this.onMouseUp);
     console.log("deactivate interactive chest");
-    window.parent.postMessage({ portal: "left" }, "http://localhost:5173");
+    window.parent.postMessage({ portal: "left" }, dappURL);
   }
 }

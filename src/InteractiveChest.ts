@@ -100,6 +100,11 @@ export class InteractiveChest {
       console.log("!", notchCursor);
       notchCursor -= notch;
       roller.add(notchGlow);
+      if (i === 2) {
+        const fakeNotchGlow = rollerGlows[(notch + 4) % 5].clone();
+        fakeNotchGlow.rotation.x = Math.PI
+        roller.add(fakeNotchGlow);
+      }
       // roller.userData.virtualY = 0
       roller.userData.virtualY = (~~(Math.random() * 16) / 16) * Math.PI * 2;
       roller.rotation.x = roller.userData.virtualY;

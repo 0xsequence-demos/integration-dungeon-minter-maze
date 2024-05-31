@@ -250,7 +250,8 @@ export class InteractiveChest {
           stillLocked = true;
         }
       }
-      if (!stillLocked) {
+      if (!stillLocked && !this.solved) {
+        window.parent.postMessage({ portal: "solved" }, dappURL);
         this.solved = true;
       }
     }
@@ -269,15 +270,8 @@ export class InteractiveChest {
     document.addEventListener("mouseup", this.onMouseUp);
     console.log("activate interactive chest");
 
-    let hex: any = null;
-
-    for (let i = 0; i < colors.length; i++) {
-      if (this.chestData.colorLoot === colors[i]) {
-        hex = colorsHex[i];
-      }
-    }
     window.parent.postMessage(
-      { portal: "loot", color: this.chestData.colorLoot },
+      { portal: "loot", color: this.chestData.color },
       dappURL,
     );
   }

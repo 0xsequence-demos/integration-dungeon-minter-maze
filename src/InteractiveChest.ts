@@ -10,6 +10,7 @@ import {
   Raycaster,
   Vector2,
 } from "three";
+import { lerp } from "three/src/math/MathUtils.js";
 import { getRandom } from "./arrayUtils";
 import type { ChestData } from "./cubeColors";
 import { getRandomIntInRange } from "./getRandomIntInRange";
@@ -66,9 +67,6 @@ export class InteractiveChest {
 
     this.rollers.sort((a, b) => a.name.localeCompare(b.name));
 
-    const id = Math.random().toString().slice(2, 4);
-
-    console.log("---");
     let cursor = 0;
     const t = this.rollers.length;
     const notchesAbs: number[] = new Array(t);
@@ -87,25 +85,19 @@ export class InteractiveChest {
       notchesRel[i] = notchesAbs[i + 1] - notchesAbs[i];
     }
 
-    for (let i = 0; i < t; i++) {
-      console.log(id, notchesAbs[i + 1], notchesRel[i]);
-    }
-
     let notchCursor = 0;
     for (let i = 0; i < this.rollers.length; i++) {
       const roller = this.rollers[i];
       const notch = notchesRel[i];
       const notchGlow = rollerGlows[notch + 2].clone();
       notchGlow.rotation.x = (notchCursor / 16) * Math.PI * 2;
-      console.log("!", notchCursor);
       notchCursor -= notch;
       roller.add(notchGlow);
       if (i === 2) {
         const fakeNotchGlow = rollerGlows[(notch + 4) % 5].clone();
-        fakeNotchGlow.rotation.x = Math.PI
+        fakeNotchGlow.rotation.x = Math.PI;
         roller.add(fakeNotchGlow);
       }
-      // roller.userData.virtualY = 0
       roller.userData.virtualY = (~~(Math.random() * 16) / 16) * Math.PI * 2;
       roller.rotation.x = roller.userData.virtualY;
     }
@@ -145,7 +137,6 @@ export class InteractiveChest {
   }
 
   private onMouseDown = (event: MouseEvent) => {
-    console.log("md");
     this.isMouseDown = true;
 
     this.updateIntersections(event.clientX, event.clientY);
@@ -161,30 +152,39 @@ export class InteractiveChest {
     const deltaY = event.y - this.lastY;
     if (this.activeRoller) {
       this.activeRoller.userData.virtualY += (deltaY / window.innerHeight) * 10;
-      this.activeRoller.rotation.x = this.activeRoller.userData.virtualY;
+      // this.activeRoller.rotation.x = this.activeRoller.userData.virtualY;
     } else {
       this.updateIntersections(event.clientX, event.clientY);
       document.body.style.cursor =
         tempIntersections.length > 0 ? "ns-resize" : "default";
     }
     this.lastY = event.y;
-    console.log("mm");
   };
 
   private onMouseUp = (event: MouseEvent) => {
-    console.log("mu");
     this.updateIntersections(event.clientX, event.clientY);
     this.activeRoller = undefined;
     this.isMouseDown = false;
   };
 
   tick = () => {
-    // for (let i = 0; i < this.rollers.length; i++) {
-    //   const roller = this.rollers[i];
-    //   roller.rotation.x +=
-    //     Math.sin(performance.now() * (0.0002 * ((i * 17 + 3) % 6.3)) - 0.02) *
-    //     0.1;
-    // }
+    for (let i = 0; i < this.rollers.length; i++) {
+      const roller = this.rollers[i];
+      const nearest =
+        (Math.round((roller.userData.virtualY / Math.PI / 2) * 16) *
+          Math.PI *
+          2) /
+        16;
+      const oldAngle = roller.rotation.x;
+      const newAngle = lerp(
+        roller.userData.virtualY,
+        roller.rotation.x - (roller.rotation.x - nearest) * 0.5,
+        0.9,
+      );
+      roller.rotation.x = newAngle;
+      const grow = Math.min(0.1, Math.abs(oldAngle - newAngle)) * 0.6;
+      roller.scale.set(1 + grow * 2, 1 + grow, 1 + grow);
+    }
   };
 
   activate() {

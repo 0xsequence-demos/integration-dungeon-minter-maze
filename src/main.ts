@@ -57,11 +57,6 @@ initResizeHandler(camera, renderer);
 
 const gamePivot = new Object3D();
 
-const t = new Mesh(
-  new SphereGeometry(1),
-  new MeshBasicMaterial({ color: 0xff0000 }),
-);
-scene.add(t);
 scene.add(gamePivot);
 
 if (import.meta.hot) {

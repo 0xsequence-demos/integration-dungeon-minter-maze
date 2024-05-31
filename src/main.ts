@@ -17,7 +17,7 @@ const scene = new Scene();
 
 // Create a camera
 const camera = new PerspectiveCamera(
-  75,
+  70,
   window.innerWidth / window.innerHeight,
   0.02,
   50,

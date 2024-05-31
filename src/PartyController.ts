@@ -3,7 +3,6 @@ import { Easing, Tween } from "three/examples/jsm/libs/tween.module.js";
 import {
   CAMERA_HEIGHT,
   DRAMATIC_LOOT_APPROACH_SPEED,
-  FOV,
   HEAD_TILT_ANGLE,
   KEYBINDINGS,
   PARTY,
@@ -13,9 +12,7 @@ import { type MapData, MapTiles } from "./MapTypes";
 import type { PartyAction } from "./PartyAction";
 import type { PartyState } from "./PartyState";
 import type { ChestData } from "./cubeColors";
-import { Direction } from "./directionUtils";
 import { isFacingLoot } from "./isFacingLoot";
-import { anglesMatch, fovConvert } from "./utils";
 
 export class PartyController {
   listenForLocationChanges(listener: () => void) {
@@ -44,7 +41,6 @@ export class PartyController {
     this.light.shadow.bias = 0.01; // Prevents shadow lines at seams in walls. Not sure why. Side-effects?
     this.light.shadow.camera.near = 0.05;
 
-    this.updateFov();
     this.updatePosition();
     this.updateRotation();
   }
@@ -63,11 +59,6 @@ export class PartyController {
     for (const listener of this.locationListeners) {
       listener();
     }
-  }
-
-  private updateFov() {
-    const vFov = fovConvert(FOV, 1 / this.camera.aspect);
-    this.camera.fov = vFov;
   }
 
   private moveTo(x: number, y: number) {

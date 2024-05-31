@@ -1,17 +1,14 @@
 import {
   AmbientLight,
-  Mesh,
-  MeshPhongMaterial,
   type Object3D,
   type PerspectiveCamera,
-  PointLight,
   Raycaster,
   Vector2,
 } from "three";
-import { Easing, Tween, update } from "three/examples/jsm/libs/tween.module.js";
+import { update } from "three/examples/jsm/libs/tween.module.js";
 import { Dungeon } from "./Dungeon";
 import type { InteractiveChest } from "./InteractiveChest";
-import type { MapData, MapTiles } from "./MapTypes";
+import type { MapData } from "./MapTypes";
 import { MiniMap } from "./MiniMap";
 import { PartyController } from "./PartyController";
 import { PartyState } from "./PartyState";

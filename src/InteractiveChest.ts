@@ -10,7 +10,9 @@ import {
   Raycaster,
   Vector2,
 } from "three";
+import { getRandom } from "./arrayUtils";
 import type { ChestData } from "./cubeColors";
+import { getRandomIntInRange } from "./getRandomIntInRange";
 import { getProtoMesh } from "./gltfUtils";
 
 const tempIntersections: Intersection<Object3D<Object3DEventMap>>[] = [];
@@ -35,6 +37,74 @@ export class InteractiveChest {
     const protoChest = await getProtoMesh("chest", "chest");
     const chest = protoChest.clone();
     const glow = chest.getObjectByName("glow");
+    const protoRoller = await getProtoMesh("chest", "roller-prototype");
+    if (!protoRoller) {
+      throw new Error("could not find roller prototype");
+    }
+    const pr = protoRoller;
+    function getGlow(suffix: string) {
+      const r = pr.getObjectByName(`roller-glow-${suffix}`);
+      if (!r) {
+        throw new Error("could not find roller glow");
+      }
+      return r;
+    }
+
+    chest.traverse((m) => {
+      if (m.name.startsWith("roller") && m.name.length === 7) {
+        this.rollers.push(m);
+      }
+    });
+
+    const rollerGlows = [
+      getGlow("d2"),
+      getGlow("d1"),
+      getGlow("0"),
+      getGlow("u1"),
+      getGlow("u2"),
+    ];
+
+    this.rollers.sort((a, b) => a.name.localeCompare(b.name));
+
+    const id = Math.random().toString().slice(2, 4);
+
+    console.log("---");
+    let cursor = 0;
+    const t = this.rollers.length;
+    const notchesAbs: number[] = new Array(t);
+    notchesAbs[0] = 0;
+    for (let i = 0; i < t - 1; i++) {
+      cursor = getRandomIntInRange(
+        Math.max(-2, cursor - 2),
+        Math.min(2, cursor + 2),
+      );
+      notchesAbs[i + 1] = cursor;
+    }
+    notchesAbs[t] = 0;
+
+    const notchesRel: number[] = new Array(t);
+    for (let i = 0; i < t; i++) {
+      notchesRel[i] = notchesAbs[i + 1] - notchesAbs[i];
+    }
+
+    for (let i = 0; i < t; i++) {
+      console.log(id, notchesAbs[i + 1], notchesRel[i]);
+    }
+
+    let notchCursor = 0;
+    for (let i = 0; i < this.rollers.length; i++) {
+      const roller = this.rollers[i];
+      const notch = notchesRel[i];
+      const notchGlow = rollerGlows[notch + 2].clone();
+      notchGlow.rotation.x = (notchCursor / 16) * Math.PI * 2;
+      console.log("!", notchCursor);
+      notchCursor -= notch;
+      roller.add(notchGlow);
+      // roller.userData.virtualY = 0
+      roller.userData.virtualY = (~~(Math.random() * 16) / 16) * Math.PI * 2;
+      roller.rotation.x = roller.userData.virtualY;
+    }
+
     if (glow instanceof Mesh) {
       const originalGlowMaterial = glow.material;
       const glowMat = new MeshPhongMaterial({
@@ -47,11 +117,6 @@ export class InteractiveChest {
       chest.traverse((m) => {
         if (m instanceof Mesh && m.material === originalGlowMaterial) {
           m.material = glowMat;
-        }
-        if (m.name.startsWith("roller") && m.name.length === 7) {
-          m.userData.virtualY = Math.random() * Math.PI * 2;
-          m.rotation.x = m.userData.virtualY;
-          this.rollers.push(m);
         }
       });
     }

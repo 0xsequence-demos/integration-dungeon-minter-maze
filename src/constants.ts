@@ -5,8 +5,6 @@ export const STARTING_X = 23;
 export const STARTING_Y = 8;
 export const STARTING_DIRECTION = Direction.NORTH;
 
-export const FOV = 110;
-
 export const CAMERA_HEIGHT = 0.3;
 
 export const HEAD_TILT_ANGLE = -0.35;

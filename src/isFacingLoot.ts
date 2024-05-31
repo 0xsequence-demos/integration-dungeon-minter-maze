@@ -1,5 +1,5 @@
+import type { ChestData } from "./ChestData";
 import { type MapData, MapTiles } from "./MapTypes";
-import type { ChestData } from "./cubeColors";
 import { anglesMatch } from "./utils";
 
 export function isFacingLoot(

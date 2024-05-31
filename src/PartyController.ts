@@ -8,16 +8,15 @@ import {
   PARTY,
 } from "./constants";
 
+import type { ChestData } from "./ChestData";
 import { type MapData, MapTiles } from "./MapTypes";
 import type { PartyAction } from "./PartyAction";
 import type { PartyState } from "./PartyState";
-import type { ChestData } from "./cubeColors";
+import { Signal } from "./Signal";
 import { isFacingLoot } from "./isFacingLoot";
 
 export class PartyController {
-  listenForLocationChanges(listener: () => void) {
-    this.locationListeners.push(listener);
-  }
+  locationChangeSignal = new Signal<void>();
   busy = false;
   nextAction: PartyAction | undefined;
 
@@ -44,21 +43,15 @@ export class PartyController {
     this.updatePosition();
     this.updateRotation();
   }
-  private locationListeners: (() => void)[] = [];
   private updatePosition() {
     this.camera.position.x = this.partyState.x;
     this.camera.position.z = this.partyState.y;
-    for (const listener of this.locationListeners) {
-      listener();
-    }
+    this.locationChangeSignal.emit();
   }
 
   private updateRotation() {
     this.camera.rotation.y = this.partyState.direction;
-    // this.camera.rotation.x = Math.PI * -0.125
-    for (const listener of this.locationListeners) {
-      listener();
-    }
+    this.locationChangeSignal.emit();
   }
 
   private moveTo(x: number, y: number) {

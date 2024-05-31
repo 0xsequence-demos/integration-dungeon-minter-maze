@@ -1,6 +1,7 @@
+import { Color } from "three";
+import type { ChestData } from "./ChestData";
 import { type MapData, MapTiles } from "./MapTypes";
 import type { PartyState } from "./PartyState";
-import type { ChestData } from "./cubeColors";
 import { asDegrees } from "./directionUtils";
 const minimapGridSize = 9; // This sets the grid size to 9x9
 
@@ -13,7 +14,7 @@ export class MiniMap {
   ) {
     //
   }
-  render() {
+  render = () => {
     if (document.getElementById("mini-map")) {
       document.getElementById("mini-map")?.remove();
     }
@@ -49,13 +50,18 @@ export class MiniMap {
           )}deg)`;
           cellDiv.appendChild(partyMarker);
         }
-        const coloredCell = this.chestDatas.find(
+        const chestData = this.chestDatas.find(
           (loot) => loot.x === ix && loot.y === iy,
         );
-        if (coloredCell) {
+        if (chestData) {
           const colorDiv = document.createElement("div");
           colorDiv.className = "color-marker";
-          colorDiv.style.backgroundColor = coloredCell.color;
+          const dimHex = new Color(chestData.color)
+            .multiplyScalar(0.1)
+            .getHexString();
+          colorDiv.style.backgroundColor = chestData.opened
+            ? `#${dimHex}`
+            : chestData.color;
           cellDiv.appendChild(colorDiv);
         }
         rowDiv.appendChild(cellDiv);
@@ -65,5 +71,5 @@ export class MiniMap {
 
     this.gameContainer.innerHTML = "";
     this.gameContainer.appendChild(miniMap);
-  }
+  };
 }

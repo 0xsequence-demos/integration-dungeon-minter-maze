@@ -1,6 +1,7 @@
+import { ChestData } from "./ChestData";
 import { type MapData, MapTiles } from "./MapTypes";
+import { colors } from "./colors";
 import { STARTING_X, STARTING_Y } from "./constants";
-import { type ChestData, colors, colorsHex } from "./cubeColors";
 
 export function generateChestDatas(map: MapData, chestDatas: ChestData[]) {
   const alreadyTriedLocations = new Array<number>();
@@ -102,24 +103,14 @@ export function generateChestDatas(map: MapData, chestDatas: ChestData[]) {
       2;
 
     const direction = (-openCardinal / 8) * Math.PI * 2 + Math.PI * 0.5;
-    const colorIndex = Math.floor(Math.random() * colorsHex.length);
+    const colorIndex = Math.floor(Math.random() * colors.length);
 
-    const color = colorsHex[colorIndex];
-
-    const colorLoot = colors[colorIndex];
+    const color = colors[colorIndex];
 
     const id = counter;
     counter++;
 
-    chestDatas.push({
-      x,
-      y,
-      color,
-      direction,
-      colorLoot,
-      id,
-      opened: false,
-    });
+    chestDatas.push(new ChestData(x, y, direction, color, id));
     map[y][x] = MapTiles.loot;
     successfulLocations.push(xy);
   }

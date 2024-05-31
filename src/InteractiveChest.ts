@@ -25,6 +25,9 @@ export class InteractiveChest {
   raycaster: Raycaster;
   mouse: Vector2;
   activeRoller: Object3D<Object3DEventMap> | undefined;
+  rollerTrueCount = {}
+  solved = false;
+
   constructor(
     public chestData: ChestData,
     private camera: PerspectiveCamera,
@@ -168,6 +171,15 @@ export class InteractiveChest {
   };
 
   tick = () => {
+    if(this.solved){
+      for (let i = 0; i < this.rollers.length; i++) {
+        const roller = this.rollers[i];
+        roller.rotation.x +=
+          Math.sin(performance.now() * (0.0002 * ((i * 17 + 3) % 6.3)) - 0.02) *
+          0.1;
+      }
+    }
+
     for (let i = 0; i < this.rollers.length; i++) {
       const roller = this.rollers[i];
       const nearest =
@@ -187,13 +199,58 @@ export class InteractiveChest {
     }
   };
 
+  allSolved() {
+    if (Object.values(this.rollerTrueCount).length === 0) {
+      return false;
+    }
+
+    return Object.values(this.rollerTrueCount).reduce((prev: any, val: any) => prev + val) === this.rollers.length;
+  }
+
   activate() {
     this.intervalID = setInterval(this.tick, 1000 / 60);
     document.addEventListener("mousedown", this.onMouseDown);
     document.addEventListener("mousemove", this.onMouseMove);
     document.addEventListener("mouseup", this.onMouseUp);
     console.log("activate interactive chest");
+    const colorsHex = [
+      "#ffb23e", //orange
+      "#DCD31D", //yellow
+      "#6fcadc", // blue
+      "#FF69B4",
+      "#008000",
+      "#A020F0",
+      // 0xD8CBF,
+      // 0xD4FF00,
+    ];
+    const colors = [
+      16757310, //orange
+      14471965, //yellow
+      7326428, // blue
+      16738740,
+      32768,
+      10494192,
+      // 0xD8CBF,
+      // 0xD4FF00,
+    ];
+
+    let hex: any = null
+
+    for(let i = 0; i < colors.length; i++){
+      if(this.chestData.colorLoot == colors[i]){
+        hex = colorsHex[i]
+      }
+    }
+    window.parent.postMessage(
+            { portal: "loot", color: hex },
+      "http://localhost:5173",
+    );
+//     window.parent.postMessage(
+//       { portal: "loot", color: this.chestData.colorLoot },
+// "https://dungeon-minter.vercel.app/",
+// );
   }
+
   deactivate() {
     if (this.intervalID !== undefined) {
       clearInterval(this.intervalID);
@@ -203,5 +260,9 @@ export class InteractiveChest {
     document.removeEventListener("mousemove", this.onMouseMove);
     document.removeEventListener("mouseup", this.onMouseUp);
     console.log("deactivate interactive chest");
+    window.parent.postMessage(
+      { portal: "left", },
+      "http://localhost:5173",
+    );
   }
 }

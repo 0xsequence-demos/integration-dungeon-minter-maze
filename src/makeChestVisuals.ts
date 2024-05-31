@@ -1,6 +1,6 @@
 import type { Object3D, PerspectiveCamera } from "three";
+import type { ChestData } from "./ChestData";
 import { InteractiveChest } from "./InteractiveChest";
-import type { ChestData } from "./cubeColors";
 
 export async function makeChestVisuals(
   chestDatas: ChestData[],

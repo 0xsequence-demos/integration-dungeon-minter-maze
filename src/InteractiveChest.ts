@@ -12,10 +12,10 @@ import {
   Vector2,
 } from "three";
 import { lerp } from "three/src/math/MathUtils.js";
+import type { ChestData } from "./ChestData";
 import { clamp } from "./clamp";
 import { clamp01 } from "./clamp01";
 import { dappURL } from "./constants";
-import { type ChestData, colors, colorsHex } from "./cubeColors";
 import { getRandomIntInRange } from "./getRandomIntInRange";
 import { getProtoMesh } from "./gltfUtils";
 import { getChildMesh, getChildObj } from "./threeUtils";
@@ -144,10 +144,10 @@ export class InteractiveChest {
 
     const originalGlowMaterial = glow.material;
     const glowMat = new MeshPhongMaterial({
-      color: new Color(this.chestData.colorLoot)
+      color: new Color(this.chestData.color)
         .multiplyScalar(0.001)
         .addScalar(0.005),
-      emissive: this.chestData.colorLoot,
+      emissive: this.chestData.color,
       shininess: 100,
     });
     chest.traverse((m) => {
@@ -276,20 +276,19 @@ export class InteractiveChest {
     );
   }
 
+  stopTickLoop = () => {
+    if (this.intervalID !== undefined) {
+      clearInterval(this.intervalID);
+      this.intervalID = undefined;
+    }
+  };
+
   deactivate() {
     if (this.solved && !this.chestData.opened) {
-      this.chestData.opened = true;
-      setTimeout(() => {
-        if (this.intervalID !== undefined) {
-          clearInterval(this.intervalID);
-          this.intervalID = undefined;
-        }
-      }, 2000);
+      this.chestData.open();
+      setTimeout(this.stopTickLoop, 2000);
     } else {
-      if (this.intervalID !== undefined) {
-        clearInterval(this.intervalID);
-        this.intervalID = undefined;
-      }
+      this.stopTickLoop();
     }
     document.removeEventListener("mousedown", this.onMouseDown);
     document.removeEventListener("mousemove", this.onMouseMove);

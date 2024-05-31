@@ -6,6 +6,7 @@ import {
   Vector2,
 } from "three";
 import { update } from "three/examples/jsm/libs/tween.module.js";
+import type { ChestData } from "./ChestData";
 import { Dungeon } from "./Dungeon";
 import type { InteractiveChest } from "./InteractiveChest";
 import type { MapData } from "./MapTypes";
@@ -13,7 +14,6 @@ import { MiniMap } from "./MiniMap";
 import { PartyController } from "./PartyController";
 import { PartyState } from "./PartyState";
 import { STARTING_DIRECTION, STARTING_X, STARTING_Y } from "./constants";
-import type { ChestData } from "./cubeColors";
 import { generateChestDatas } from "./generateChestDatas";
 import { isFacingLoot } from "./isFacingLoot";
 import { loadMapDataFromImage } from "./loadMapDataFromImage";
@@ -89,7 +89,7 @@ export class DungeonGame {
       this.gameContainer,
     );
 
-    this.party.listenForLocationChanges(() => this.minimap.render());
+    this.party.locationChangeSignal.listen(this.minimap.render);
     this.partyState = partyState;
 
     // Create a container for the buttons
@@ -104,29 +104,19 @@ export class DungeonGame {
       button.setAttribute("data-key", label);
       this.navButtons.set(label, button);
 
-      // if (label === "") {
-      //   button.id = "glass";
-      //   button.style.border = "0px";
-      //   button.style.top = "140px";
-      //   button.style.left = "70px";
-      //   button.style.height = "200px";
-
-      //   button.style.padding = "200px";
-      //   button.style.position = "fixed";
-      //   button.style.outline = "none";
-      //   button.style.zIndex = "100";
-      // }
-
       button.onclick = this.onClickNavigationButton;
 
       buttonsContainer.appendChild(button);
     }
 
     generateChestDatas(this.map, this.chestDatas);
+    for (const chestData of this.chestDatas) {
+      chestData.openSignal.listen(this.minimap.render);
+    }
 
     makeChestVisuals(this.chestDatas, this.pivot, this.chests, this.camera);
 
-    this.party.listenForLocationChanges(() => {
+    this.party.locationChangeSignal.listen(() => {
       const chestData = isFacingLoot(
         partyState.x,
         partyState.y,
@@ -159,9 +149,6 @@ export class DungeonGame {
     }
 
     this.minimap.render();
-
-    // Add event listener for mouse click
-    window.addEventListener("click", this.onMouseClick, false);
 
     document.addEventListener("keydown", this.onKeyDown);
     document.addEventListener("keyup", this.onKeyUp);
@@ -223,58 +210,6 @@ export class DungeonGame {
     }
   };
 
-  onMouseClick = (event: MouseEvent) => {
-    // Calculate mouse position in normalized device coordinates
-    this.mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
-    this.mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
-
-    // Update the picking ray with the camera and mouse position
-    this.raycaster.setFromCamera(this.mouse, this.camera);
-
-    // Calculate objects intersecting the picking ray
-    const intersects = this.raycaster.intersectObjects(this.pivot.children);
-
-    // for (let i = 0; i < intersects.length; i++) {
-    //   if (
-    //     intersects[i].object.name.slice(0, 4) === "loot" &&
-    //     intersects[i].distance < 1
-    //   ) {
-    //     window.parent.postMessage(
-    //       { portal: "loot", color: intersects[i].object.userData.color },
-    //       "https://dungeon-minter.vercel.app/",
-    //     );
-
-    //     this.chestDatas = this.chestDatas.filter((cell) => {
-    //       if (
-    //         String(cell.id) !== String(intersects[i].object.userData.loot_id)
-    //       ) {
-    //         return true;
-    //       }
-    //       return false;
-    //     });
-    //     // this.pivot.remove(intersects[i].object);
-    //     intersects[i].object.traverse((n) => {
-    //       if (n.parent && n instanceof PointLight) {
-    //         n.parent.remove(n);
-    //       }
-    //       if (
-    //         n.name === "glow" &&
-    //         n instanceof Mesh &&
-    //         n.material instanceof MeshPhongMaterial
-    //       ) {
-    //         n.material.emissive.multiplyScalar(0.02);
-    //       } else if (n.name === "lid") {
-    //         new Tween(n.rotation)
-    //           .to({ x: -1 }, 1000)
-    //           .easing(Easing.Sinusoidal.InOut)
-    //           .start();
-    //       }
-    //     });
-    //     this.minimap.render();
-    //   }
-    // }
-  };
-
   time = 0;
   simulate = (dt: number) => {
     update(); //TWEENER
@@ -284,7 +219,6 @@ export class DungeonGame {
     }
   };
   cleanup = () => {
-    window.removeEventListener("click", this.onMouseClick);
     document.removeEventListener("keydown", this.onKeyDown);
     document.removeEventListener("keyup", this.onKeyUp);
     document.body.removeChild(this.buttonsContainer);

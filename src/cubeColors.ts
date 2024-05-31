@@ -5,24 +5,25 @@ export type ChestData = {
   color: string;
   colorLoot: number;
   id: number;
+  opened: boolean;
 };
 export const colorsHex = [
   "#ffb23e", //orange
   "#DCD31D", //yellow
   "#6fcadc", // blue
   "#FF69B4",
-  "#008000",
+  "#108008",
   "#A020F0",
   // 0xD8CBF,
   // 0xD4FF00,
 ];
 export const colors = [
-  16757310, //orange
-  14471965, //yellow
-  7326428, // blue
-  16738740,
-  32768,
-  10494192,
+  0xffb23e, //orange
+  0xdcd31d, //yellow
+  0x6fcadc, // blue
+  0xff69b4,
+  0x008000,
+  0xa020f0,
   // 0xD8CBF,
   // 0xD4FF00,
 ];

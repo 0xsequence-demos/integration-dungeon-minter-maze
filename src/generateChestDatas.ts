@@ -118,6 +118,7 @@ export function generateChestDatas(map: MapData, chestDatas: ChestData[]) {
       direction,
       colorLoot,
       id,
+      opened: false,
     });
     map[y][x] = MapTiles.loot;
     successfulLocations.push(xy);

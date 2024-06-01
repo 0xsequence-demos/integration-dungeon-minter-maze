@@ -125,7 +125,19 @@ export class InteractiveChest {
       notchesRel[i] = notchesAbs[i + 1] - notchesAbs[i];
     }
 
+    const candidates = [-2, -1, 0, 1, 2].filter(
+      (v) => v !== notchesRel[0] && v !== notchesRel[4],
+    );
+    const fakeNotches = [
+      candidates[0],
+      undefined,
+      undefined,
+      undefined,
+      candidates[0] + candidates[1] === 0 ? candidates[2] : candidates[1],
+    ];
+
     let notchCursor = 0;
+
     for (let i = 0; i < this.rollers.length; i++) {
       const roller = this.rollers[i];
       const notch = notchesRel[i];
@@ -133,8 +145,9 @@ export class InteractiveChest {
       notchGlow.rotation.x = (notchCursor / 16) * Math.PI * 2;
       notchCursor -= notch;
       roller.add(notchGlow);
-      if (i === 2) {
-        const fakeNotchGlow = rollerGlows[(notch + 4) % 5].clone();
+      const fakeNotch = fakeNotches[i];
+      if (fakeNotch !== undefined) {
+        const fakeNotchGlow = rollerGlows[fakeNotch + 2].clone();
         fakeNotchGlow.rotation.x = Math.PI;
         roller.add(fakeNotchGlow);
       }

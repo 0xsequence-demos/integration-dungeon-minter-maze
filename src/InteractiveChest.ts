@@ -21,14 +21,22 @@ import { getProtoMesh } from "./gltfUtils";
 import { getChildMesh, getChildObj } from "./threeUtils";
 import { anglesMatch } from "./utils";
 
+
+function nearestNotchAngle(v: number) {
+  return (Math.round((v / Math.PI / 2) * 16) *
+    Math.PI *
+    2) /
+    16;
+}
+
 const tempIntersections: Intersection<Object3D<Object3DEventMap>>[] = [];
 export class InteractiveChest {
   visuals: Object3D;
   rollers: Object3D[] = [];
   intervalID: number | undefined;
-  isMouseDown: boolean;
+  isPointerDown: boolean;
   raycaster: Raycaster;
-  mouse: Vector2;
+  pointer: Vector2;
   activeRoller: Object3D<Object3DEventMap> | undefined;
   solved = false;
   lid: Object3D<Object3DEventMap>;
@@ -69,7 +77,7 @@ export class InteractiveChest {
   ) {
     this.visuals = new Object3D();
     this.raycaster = new Raycaster();
-    this.mouse = new Vector2();
+    this.pointer = new Vector2();
     this.init();
   }
   async init() {
@@ -181,33 +189,60 @@ export class InteractiveChest {
   }
 
   private updateIntersections(x: number, y: number) {
-    this.mouse.x = (x / window.innerWidth) * 2 - 1;
-    this.mouse.y = -(y / window.innerHeight) * 2 + 1;
+    this.pointer.x = (x / window.innerWidth) * 2 - 1;
+    this.pointer.y = -(y / window.innerHeight) * 2 + 1;
 
-    this.raycaster.setFromCamera(this.mouse, this.camera);
+    this.raycaster.setFromCamera(this.pointer, this.camera);
     tempIntersections.length = 0;
     this.raycaster.intersectObjects(this.rollers, false, tempIntersections);
   }
 
+  private onTouchStart = (event: TouchEvent) => {
+    if (this._openness > 0) return;
+    this.isPointerDown = true;
+
+    this.updateIntersections(event.touches[0].clientX, event.touches[0].clientY);
+
+    if (tempIntersections.length > 0) {
+      this.activeRoller = tempIntersections[0].object;
+    }
+    this.lastTouchY = event.touches[0].clientY;
+  };
+
   private onMouseDown = (event: MouseEvent) => {
     if (this._openness > 0) return;
-    this.isMouseDown = true;
+    this.isPointerDown = true;
 
     this.updateIntersections(event.clientX, event.clientY);
 
     if (tempIntersections.length > 0) {
       this.activeRoller = tempIntersections[0].object;
     }
-    this.lastY = event.y;
+    this.lastMouseY = event.y;
   };
 
-  private lastY = 0;
+  private lastTouchY = 0;
+  private onTouchMove = (event: TouchEvent) => {
+    if (this._openness > 0) {
+      return;
+    }
+    const deltaY = event.touches[0].clientY - this.lastTouchY;
+    if (this.activeRoller) {
+      this.activeRoller.userData.virtualY += (deltaY / window.innerHeight) * 10;
+
+    } else {
+      this.updateIntersections(event.touches[0].clientX, event.touches[0].clientY);
+    }
+    this.lastTouchY = event.touches[0].clientY;
+  }
+
+  private lastMouseY = 0;
   private onMouseMove = (event: MouseEvent) => {
     if (this._openness > 0) {
       document.body.style.cursor = "default";
       return;
     }
-    const deltaY = event.y - this.lastY;
+    const deltaY = event.y - this.lastMouseY;
     if (this.activeRoller) {
       this.activeRoller.userData.virtualY += (deltaY / window.innerHeight) * 10;
       // this.activeRoller.rotation.x = this.activeRoller.userData.virtualY;
@@ -216,21 +251,24 @@ export class InteractiveChest {
       document.body.style.cursor =
         tempIntersections.length > 0 ? "ns-resize" : "default";
     }
-    this.lastY = event.y;
+    this.lastMouseY = event.y;
+  };
+
+  private onTouchEnd = (event: TouchEvent) => {
+    if (this.activeRoller) {
+      this.activeRoller.userData.virtualY = nearestNotchAngle(this.activeRoller.userData.virtualY);
+    }
+    this.activeRoller = undefined;
+    this.isPointerDown = false;
   };
 
   private onMouseUp = (event: MouseEvent) => {
     this.updateIntersections(event.clientX, event.clientY);
     if (this.activeRoller) {
-      const nearest =
-        (Math.round((this.activeRoller.userData.virtualY / Math.PI / 2) * 16) *
-          Math.PI *
-          2) /
-        16;
-      this.activeRoller.userData.virtualY = nearest;
+      this.activeRoller.userData.virtualY = nearestNotchAngle(this.activeRoller.userData.virtualY);
     }
     this.activeRoller = undefined;
-    this.isMouseDown = false;
+    this.isPointerDown = false;
   };
 
   tick = () => {
@@ -245,20 +283,23 @@ export class InteractiveChest {
     } else {
       for (let i = 0; i < this.rollers.length; i++) {
         const roller = this.rollers[i];
-        const nearest =
-          (Math.round((roller.userData.virtualY / Math.PI / 2) * 16) *
-            Math.PI *
-            2) /
-          16;
+        const nearest = nearestNotchAngle(roller.userData.virtualY)
         const oldAngle = roller.rotation.x;
         const newAngle = lerp(
           roller.userData.virtualY,
           roller.rotation.x - (roller.rotation.x - nearest) * 0.5,
-          this.isMouseDown ? 0.9 : 1,
+          this.isPointerDown ? 0.9 : 1,
         );
         roller.rotation.x = newAngle;
         const grow = Math.min(0.1, Math.abs(oldAngle - newAngle)) * 0.6;
         roller.scale.set(1 + grow * 2, 1 + grow, 1 + grow);
+        if(grow > 0.05) {
+          try{
+            window.navigator.vibrate(200)
+          } catch(e) {
+            //
+          }
+        }
         if (!anglesMatch(roller.rotation.x, 0)) {
           stillLocked = true;
         }
@@ -278,6 +319,9 @@ export class InteractiveChest {
 
   activate() {
     this.intervalID = setInterval(this.tick, 1000 / 60);
+    document.addEventListener("touchstart", this.onTouchStart);
+    document.addEventListener("touchmove", this.onTouchMove);
+    document.addEventListener("touchend", this.onTouchEnd);
     document.addEventListener("mousedown", this.onMouseDown);
     document.addEventListener("mousemove", this.onMouseMove);
     document.addEventListener("mouseup", this.onMouseUp);
@@ -303,6 +347,9 @@ export class InteractiveChest {
     } else {
       this.stopTickLoop();
     }
+    document.removeEventListener("touchstart", this.onTouchStart);
+    document.removeEventListener("touchmove", this.onTouchMove);
+    document.removeEventListener("touchend", this.onTouchEnd);
     document.removeEventListener("mousedown", this.onMouseDown);
     document.removeEventListener("mousemove", this.onMouseMove);
     document.removeEventListener("mouseup", this.onMouseUp);

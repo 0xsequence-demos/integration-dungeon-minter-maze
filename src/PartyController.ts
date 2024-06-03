@@ -28,8 +28,8 @@ export class PartyController {
     private map: MapData,
     private chestDatas: ChestData[],
   ) {
-    this.camera.position.y = CAMERA_HEIGHT;
-
+    this.camera.position.set(partyState.x, CAMERA_HEIGHT, partyState.y);
+    this.camera.rotation.y = partyState.direction;
     this.light = new PointLight(
       PARTY.LIGHT.COLOR,
       PARTY.LIGHT.INTENSITY,
@@ -44,13 +44,10 @@ export class PartyController {
     this.updateRotation();
   }
   private updatePosition() {
-    this.camera.position.x = this.partyState.x;
-    this.camera.position.z = this.partyState.y;
     this.locationChangeSignal.emit();
   }
 
   private updateRotation() {
-    this.camera.rotation.y = this.partyState.direction;
     this.locationChangeSignal.emit();
   }
 
@@ -71,7 +68,7 @@ export class PartyController {
     } else {
       this.partyState.x = x;
       this.partyState.y = y;
-
+      this.updatePosition();
       new Tween(this.camera.position)
         .to(
           { x, z: y },
@@ -88,7 +85,6 @@ export class PartyController {
         .easing(Easing.Sinusoidal.InOut)
         .onComplete(() => {
           this.busy = false;
-          this.updatePosition();
           this.tryNextAction();
         })
         .start();
@@ -117,12 +113,12 @@ export class PartyController {
     this.busy = true;
 
     this.partyState.direction = dir;
+    this.updateRotation();
     new Tween(this.camera.rotation)
       .to({ y: dir }, PARTY.ROTATE_TIME)
       .easing(Easing.Sinusoidal.InOut)
       .onComplete(() => {
         this.busy = false;
-        this.updateRotation();
         this.tryNextAction();
       })
       .start();

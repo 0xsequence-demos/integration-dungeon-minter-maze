@@ -11,7 +11,7 @@ import {
   Raycaster,
   Vector2,
 } from "three";
-import { lerp } from "three/src/math/MathUtils.js";
+import { lerp, randInt } from "three/src/math/MathUtils.js";
 import type { ChestData } from "./ChestData";
 import { clamp } from "./clamp";
 import { clamp01 } from "./clamp01";
@@ -21,12 +21,9 @@ import { getProtoMesh } from "./gltfUtils";
 import { getChildMesh, getChildObj } from "./threeUtils";
 import { anglesMatch } from "./utils";
 
-
+const TAU = Math.PI * 2;
 function nearestNotchAngle(v: number) {
-  return (Math.round((v / Math.PI / 2) * 16) *
-    Math.PI *
-    2) /
-    16;
+  return (Math.round((v / TAU) * 16) * TAU) / 16;
 }
 
 const tempIntersections: Intersection<Object3D<Object3DEventMap>>[] = [];
@@ -43,6 +40,8 @@ export class InteractiveChest {
   light: PointLight;
   glowMaterial: MeshPhongMaterial;
   private _openness = 0;
+  glowMaterialOff: MeshPhongMaterial;
+  powerLineToLock: Mesh<any, any, any>;
   public get openness() {
     return this._openness;
   }
@@ -85,7 +84,9 @@ export class InteractiveChest {
     const chest = protoChest.clone();
     const glow = getChildMesh(chest, "glow");
     const lid = getChildObj(chest, "lid");
+    const powerLineToLock = getChildMesh(lid, "power-out");
     this.lid = lid;
+    this.powerLineToLock = powerLineToLock;
     const protoRoller = await getProtoMesh("chest", "roller-prototype");
     if (!protoRoller) {
       throw new Error("could not find roller prototype");
@@ -113,6 +114,11 @@ export class InteractiveChest {
       getGlow("u2"),
     ];
 
+    for (let i = 0; i < rollerGlows.length; i++) {
+      const rollerGlow = rollerGlows[i];
+      rollerGlow.userData.relativeAngle = ((i - 2) / 16) * TAU;
+    }
+
     this.rollers.sort((a, b) => a.name.localeCompare(b.name));
 
     let cursor = 0;
@@ -133,33 +139,24 @@ export class InteractiveChest {
       notchesRel[i] = notchesAbs[i + 1] - notchesAbs[i];
     }
 
-    const candidates = [-2, -1, 0, 1, 2].filter(
-      (v) => v !== notchesRel[0] && v !== notchesRel[4],
-    );
-    const fakeNotches = [
-      candidates[0],
-      undefined,
-      undefined,
-      undefined,
-      candidates[0] + candidates[1] === 0 ? candidates[2] : candidates[1],
-    ];
-
-    let notchCursor = 0;
-
     for (let i = 0; i < this.rollers.length; i++) {
       const roller = this.rollers[i];
-      const notch = notchesRel[i];
-      const notchGlow = rollerGlows[notch + 2].clone();
-      notchGlow.rotation.x = (notchCursor / 16) * Math.PI * 2;
-      notchCursor -= notch;
-      roller.add(notchGlow);
-      const fakeNotch = fakeNotches[i];
-      if (fakeNotch !== undefined) {
-        const fakeNotchGlow = rollerGlows[fakeNotch + 2].clone();
-        fakeNotchGlow.rotation.x = Math.PI;
+      const realV = notchesRel[i] + 2;
+      for (let j = 0; j < 3; j++) {
+        const a = (j * 16) / 3;
+        let v = j === 0 ? realV : randInt(0, 4);
+        if (j > 0 && realV === v) {
+          v = (v + 1) % 5;
+        }
+        const fakeNotchGlow = rollerGlows[v].clone();
+        fakeNotchGlow.rotation.x = nearestNotchAngle(
+          ((a + v * 0.5) / 16) * TAU,
+        );
         roller.add(fakeNotchGlow);
       }
-      roller.userData.virtualY = (~~(Math.random() * 16) / 16) * Math.PI * 2;
+      roller.userData.virtualY = nearestNotchAngle(Math.random() * TAU);
+      roller.userData.initialSpinSpeed =
+        lerp((i % 2) - 0.5, 0, Math.random() * 0.5) * 2.5;
       roller.rotation.x = roller.userData.virtualY;
     }
 
@@ -177,6 +174,9 @@ export class InteractiveChest {
       }
     });
     this.glowMaterial = glowMat;
+    this.glowMaterialOff = glowMat.clone();
+    this.glowMaterialOff.emissive.multiplyScalar(0.3);
+    this.powerLineToLock.material = this.glowMaterialOff;
 
     chest.userData.loot_id = this.chestData.id;
 
@@ -201,7 +201,10 @@ export class InteractiveChest {
     if (this._openness > 0) return;
     this.isPointerDown = true;
 
-    this.updateIntersections(event.touches[0].clientX, event.touches[0].clientY);
+    this.updateIntersections(
+      event.touches[0].clientX,
+      event.touches[0].clientY,
+    );
 
     if (tempIntersections.length > 0) {
       this.activeRoller = tempIntersections[0].object;
@@ -229,12 +232,14 @@ export class InteractiveChest {
     const deltaY = event.touches[0].clientY - this.lastTouchY;
     if (this.activeRoller) {
       this.activeRoller.userData.virtualY += (deltaY / window.innerHeight) * 10;
-
     } else {
-      this.updateIntersections(event.touches[0].clientX, event.touches[0].clientY);
+      this.updateIntersections(
+        event.touches[0].clientX,
+        event.touches[0].clientY,
+      );
     }
     this.lastTouchY = event.touches[0].clientY;
-  }
+  };
 
   private lastMouseY = 0;
   private onMouseMove = (event: MouseEvent) => {
@@ -256,7 +261,9 @@ export class InteractiveChest {
 
   private onTouchEnd = (event: TouchEvent) => {
     if (this.activeRoller) {
-      this.activeRoller.userData.virtualY = nearestNotchAngle(this.activeRoller.userData.virtualY);
+      this.activeRoller.userData.virtualY = nearestNotchAngle(
+        this.activeRoller.userData.virtualY,
+      );
     }
     this.activeRoller = undefined;
     this.isPointerDown = false;
@@ -265,13 +272,18 @@ export class InteractiveChest {
   private onMouseUp = (event: MouseEvent) => {
     this.updateIntersections(event.clientX, event.clientY);
     if (this.activeRoller) {
-      this.activeRoller.userData.virtualY = nearestNotchAngle(this.activeRoller.userData.virtualY);
+      this.activeRoller.userData.virtualY = nearestNotchAngle(
+        this.activeRoller.userData.virtualY,
+      );
     }
     this.activeRoller = undefined;
     this.isPointerDown = false;
   };
 
   tick = () => {
+    this.glowMaterialOff.emissive
+      .copy(this.glowMaterial.emissive)
+      .multiplyScalar(Math.sin(performance.now() * 0.01) * 0.2 + 0.7);
     let stillLocked = false;
     if (this.solved) {
       for (let i = 0; i < this.rollers.length; i++) {
@@ -281,9 +293,14 @@ export class InteractiveChest {
           0.1;
       }
     } else {
+      let angleCursor = 0;
       for (let i = 0; i < this.rollers.length; i++) {
         const roller = this.rollers[i];
-        const nearest = nearestNotchAngle(roller.userData.virtualY)
+        if (Math.abs(roller.userData.initialSpinSpeed) > 0.07) {
+          roller.userData.virtualY += roller.userData.initialSpinSpeed;
+          roller.userData.initialSpinSpeed *= 0.96;
+        }
+        const nearest = nearestNotchAngle(roller.userData.virtualY);
         const oldAngle = roller.rotation.x;
         const newAngle = lerp(
           roller.userData.virtualY,
@@ -293,18 +310,43 @@ export class InteractiveChest {
         roller.rotation.x = newAngle;
         const grow = Math.min(0.1, Math.abs(oldAngle - newAngle)) * 0.6;
         roller.scale.set(1 + grow * 2, 1 + grow, 1 + grow);
-        if(grow > 0.05) {
-          try{
-            window.navigator.vibrate(200)
-          } catch(e) {
+        if (grow > 0.05) {
+          try {
+            window.navigator.vibrate(200);
+          } catch (e) {
             //
           }
         }
-        if (!anglesMatch(roller.rotation.x, 0)) {
+        let foundNextOne = false;
+        for (const rollerGlow of roller.children) {
+          if (rollerGlow instanceof Mesh) {
+            const a = rollerGlow.rotation.x + roller.rotation.x;
+            if (!stillLocked && anglesMatch(angleCursor, a, 0.1)) {
+              rollerGlow.material = this.glowMaterial;
+              angleCursor -= rollerGlow.userData.relativeAngle;
+              foundNextOne = true;
+            } else {
+              rollerGlow.material = this.glowMaterialOff;
+            }
+          }
+        }
+        if (!foundNextOne) {
           stillLocked = true;
         }
       }
+      if (!stillLocked && !anglesMatch(angleCursor, 0, 0.1)) {
+        stillLocked = true;
+      }
       if (!stillLocked && !this.solved) {
+        for (let i = 0; i < this.rollers.length; i++) {
+          const roller = this.rollers[i];
+          for (const rollerGlow of roller.children) {
+            if (rollerGlow instanceof Mesh) {
+              rollerGlow.material = this.glowMaterial;
+            }
+          }
+        }
+        this.powerLineToLock.material = this.glowMaterial;
         window.parent.postMessage({ portal: "solved" }, dappURL);
         this.solved = true;
       }

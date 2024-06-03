@@ -14,11 +14,11 @@ import { MiniMap } from "./MiniMap";
 import { PartyController } from "./PartyController";
 import { PartyState } from "./PartyState";
 import { STARTING_DIRECTION, STARTING_X, STARTING_Y } from "./constants";
+import { dappURL } from "./constants";
 import { generateChestDatas } from "./generateChestDatas";
 import { isFacingLoot } from "./isFacingLoot";
 import { loadMapDataFromImage } from "./loadMapDataFromImage";
 import { makeChestVisuals } from "./makeChestVisuals";
-import { dappURL } from "./constants";
 
 // Array of button labels
 const buttonLabels = ["Q", "W", "E", "A", "S", "D"];
@@ -57,12 +57,12 @@ export class DungeonGame {
     private pivot: Object3D,
     private camera: PerspectiveCamera,
   ) {
-    var self = this
-    window.addEventListener('message', (event) => {
-      if (event.origin !== dappURL) { // Replace with your origin for security
+    window.addEventListener("message", (event) => {
+      if (event.origin !== dappURL) {
+        // Replace with your origin for security
         return; // Always check the origin to ensure that the message is from a trusted source
       }
-      const key_code = buttonKeyMap['S']
+      const key_code = buttonKeyMap.S;
       this.party.handleKey(key_code);
     });
     const gameContainer = document.getElementById("gameContainer");
@@ -199,8 +199,6 @@ export class DungeonGame {
     }
   };
 
-  
-
   onKeyDown = (e: KeyboardEvent) => {
     const key = e.keyCode ? e.keyCode : e.which;
     if (this.party) {
@@ -235,4 +233,3 @@ export class DungeonGame {
     document.body.removeChild(this.buttonsContainer);
   };
 }
-

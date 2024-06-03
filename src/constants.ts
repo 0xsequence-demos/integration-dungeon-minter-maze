@@ -39,5 +39,5 @@ KEYBINDINGS.set(33, "turnLeft");
 KEYBINDINGS.set(69, "turnRight");
 KEYBINDINGS.set(34, "turnRight");
 
-// export const dappURL = "http://localhost:5173"
-export const dappURL = "https://dungeon-minter.vercel.app/";
+export const dappURL = "http://localhost:5173"
+// export const dappURL = "https://dungeon-minter.vercel.app/";

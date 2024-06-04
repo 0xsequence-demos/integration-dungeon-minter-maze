@@ -310,9 +310,9 @@ export class InteractiveChest {
         roller.rotation.x = newAngle;
         const grow = Math.min(0.1, Math.abs(oldAngle - newAngle)) * 0.6;
         roller.scale.set(1 + grow * 2, 1 + grow, 1 + grow);
-        if (grow > 0.05) {
+        if (Math.abs(roller.userData.initialSpinSpeed) <= 0.07 && grow > 0.05) {
           try {
-            window.navigator.vibrate(200);
+            window.navigator.vibrate(20);
           } catch (e) {
             //
           }

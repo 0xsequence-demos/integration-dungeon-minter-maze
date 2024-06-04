@@ -312,7 +312,7 @@ export class InteractiveChest {
         roller.scale.set(1 + grow * 2, 1 + grow, 1 + grow);
         if (Math.abs(roller.userData.initialSpinSpeed) <= 0.07 && grow > 0.05) {
           try {
-            window.navigator.vibrate(20);
+            window.navigator.vibrate(10);
           } catch (e) {
             //
           }

@@ -1,7 +1,7 @@
 import type { PartyAction } from "./PartyAction";
 import { Direction } from "./directionUtils";
 
-export const STARTING_X = 23;
+export const STARTING_X = 13;
 export const STARTING_Y = 8;
 export const STARTING_DIRECTION = Direction.NORTH;
 
